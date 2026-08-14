@@ -1,33 +1,132 @@
-import express from "express";
+ import express from "express";
 import cors from "cors";
 import { GoogleGenAI } from "@google/genai";
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
+
+// ======================================
+// CREATE WAV HEADER
+// ======================================
+
+function createWav(pcmData, sampleRate = 24000) {
+
+    const buffer =
+        Buffer.alloc(44 + pcmData.length);
+
+    buffer.write("RIFF", 0);
+
+    buffer.writeUInt32LE(
+        36 + pcmData.length,
+        4
+    );
+
+    buffer.write("WAVE", 8);
+
+    buffer.write("fmt ", 12);
+
+    buffer.writeUInt32LE(
+        16,
+        16
+    );
+
+    buffer.writeUInt16LE(
+        1,
+        20
+    );
+
+    buffer.writeUInt16LE(
+        1,
+        22
+    );
+
+    buffer.writeUInt32LE(
+        sampleRate,
+        24
+    );
+
+    buffer.writeUInt32LE(
+        sampleRate * 2,
+        28
+    );
+
+    buffer.writeUInt16LE(
+        2,
+        32
+    );
+
+    buffer.writeUInt16LE(
+        16,
+        34
+    );
+
+    buffer.write("data", 36);
+
+    buffer.writeUInt32LE(
+        pcmData.length,
+        40
+    );
+
+    pcmData.copy(
+        buffer,
+        44
+    );
+
+    return buffer;
+}
+
+
+// ======================================
+// TEST
+// ======================================
+
 app.get("/", (req, res) => {
+
     res.json({
-        message: "Voice Over Studio backend is working!"
+        status: "online",
+        message: "Voice Over Studio backend is working"
     });
+
 });
+
+
+// ======================================
+// TEXT TO SPEECH
+// ======================================
 
 app.post("/tts", async (req, res) => {
 
     try {
 
-        const { text, voice } = req.body;
+        const {
+            text,
+            voice
+        } = req.body;
 
-        if (!text) {
+
+        if (!text || !text.trim()) {
+
             return res.status(400).json({
-                error: "Text is required"
+
+                error:
+                    "Text is required"
+
             });
+
         }
+
+
+        console.log(
+            "Generating voice..."
+        );
+
 
         const response =
             await ai.models.generateContent({
@@ -39,7 +138,8 @@ app.post("/tts", async (req, res) => {
                     {
                         parts: [
                             {
-                                text: text
+                                text:
+                                    text.trim()
                             }
                         ]
                     }
@@ -70,37 +170,77 @@ app.post("/tts", async (req, res) => {
 
             });
 
-        const audio =
+
+        const audioPart =
             response
                 .candidates?.[0]
                 ?.content
                 ?.parts
                 ?.find(
-                    part => part.inlineData
+                    part =>
+                        part.inlineData
                 );
 
-        if (!audio) {
+
+        if (!audioPart) {
+
+            console.log(
+                "No audio returned"
+            );
 
             return res.status(500).json({
-                error: "No audio returned"
+
+                error:
+                    "Gemini did not return audio"
+
             });
 
         }
 
-        res.json({
-            audio: audio.inlineData.data,
-            mimeType:
-                audio.inlineData.mimeType
-        });
+
+        const pcm =
+            Buffer.from(
+                audioPart.inlineData.data,
+                "base64"
+            );
+
+
+        const wav =
+            createWav(
+                pcm,
+                24000
+            );
+
+
+        res.setHeader(
+            "Content-Type",
+            "audio/wav"
+        );
+
+
+        res.setHeader(
+            "Content-Disposition",
+            'attachment; filename="voice-over.wav"'
+        );
+
+
+        res.send(wav);
 
     }
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            "TTS ERROR:",
+            error
+        );
 
         res.status(500).json({
-            error: "Voice generation failed"
+
+            error:
+                error.message ||
+                "Voice generation failed"
+
         });
 
     }
