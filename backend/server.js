@@ -1,4 +1,4 @@
- import express from "express";
+  import express from "express";
 import cors from "cors";
 import { GoogleGenAI } from "@google/genai";
 
@@ -13,24 +13,49 @@ const ai = new GoogleGenAI({
 
 
 // ======================================
-// CREATE WAV HEADER
+// CREATE WAV FILE FROM PCM
 // ======================================
 
 function createWav(pcmData, sampleRate = 24000) {
 
-    const buffer =
-        Buffer.alloc(44 + pcmData.length);
+    const numChannels = 1;
+    const bitsPerSample = 16;
 
-    buffer.write("RIFF", 0);
+    const byteRate =
+        sampleRate *
+        numChannels *
+        bitsPerSample / 8;
+
+    const blockAlign =
+        numChannels *
+        bitsPerSample / 8;
+
+    const buffer =
+        Buffer.alloc(
+            44 + pcmData.length
+        );
+
+
+    buffer.write(
+        "RIFF",
+        0
+    );
 
     buffer.writeUInt32LE(
         36 + pcmData.length,
         4
     );
 
-    buffer.write("WAVE", 8);
+    buffer.write(
+        "WAVE",
+        8
+    );
 
-    buffer.write("fmt ", 12);
+
+    buffer.write(
+        "fmt ",
+        12
+    );
 
     buffer.writeUInt32LE(
         16,
@@ -43,7 +68,7 @@ function createWav(pcmData, sampleRate = 24000) {
     );
 
     buffer.writeUInt16LE(
-        1,
+        numChannels,
         22
     );
 
@@ -53,112 +78,170 @@ function createWav(pcmData, sampleRate = 24000) {
     );
 
     buffer.writeUInt32LE(
-        sampleRate * 2,
+        byteRate,
         28
     );
 
     buffer.writeUInt16LE(
-        2,
+        blockAlign,
         32
     );
 
     buffer.writeUInt16LE(
-        16,
+        bitsPerSample,
         34
     );
 
-    buffer.write("data", 36);
+
+    buffer.write(
+        "data",
+        36
+    );
 
     buffer.writeUInt32LE(
         pcmData.length,
         40
     );
 
+
     pcmData.copy(
         buffer,
         44
     );
 
+
     return buffer;
+
 }
 
 
 // ======================================
-// TEST
+// HEALTH CHECK
 // ======================================
 
-app.get("/", (req, res) => {
+app.get(
+    "/",
+    (req, res) => {
 
-    res.json({
-        status: "online",
-        message: "Voice Over Studio backend is working"
-    });
+        res.json({
 
-});
+            status: "online",
+
+            message:
+                "Voice Over Studio backend is working"
+
+        });
+
+    }
+);
+
+
+// ======================================
+// TEST TTS ROUTE
+// ======================================
+
+app.get(
+    "/tts",
+    (req, res) => {
+
+        res.json({
+
+            message:
+                "TTS endpoint is online. Send a POST request to /tts."
+
+        });
+
+    }
+);
 
 
 // ======================================
 // TEXT TO SPEECH
 // ======================================
 
-app.post("/tts", async (req, res) => {
+app.post(
+    "/tts",
+    async (req, res) => {
 
-    try {
+        try {
 
-        const {
-            text,
-            voice
-        } = req.body;
-
-
-        if (!text || !text.trim()) {
-
-            return res.status(400).json({
-
-                error:
-                    "Text is required"
-
-            });
-
-        }
+            const {
+                text,
+                voice
+            } = req.body;
 
 
-        console.log(
-            "Generating voice..."
-        );
+            // ------------------------------
+            // CHECK TEXT
+            // ------------------------------
+
+            if (
+                !text ||
+                !text.trim()
+            ) {
+
+                return res.status(400).json({
+
+                    error:
+                        "Text is required"
+
+                });
+
+            }
 
 
-        const response =
-            await ai.models.generateContent({
+            console.log(
+                "Generating voice..."
+            );
 
-                model:
-                    "gemini-2.5-flash-preview-tts",
+            console.log(
+                "Voice:",
+                voice || "Kore"
+            );
 
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text:
-                                    text.trim()
-                            }
-                        ]
-                    }
-                ],
 
-                config: {
+            // ------------------------------
+            // GEMINI TTS
+            // ------------------------------
 
-                    responseModalities: [
-                        "AUDIO"
+            const response =
+                await ai.models.generateContent({
+
+                    model:
+                        "gemini-2.5-flash-preview-tts",
+
+                    contents: [
+
+                        {
+                            parts: [
+
+                                {
+                                    text:
+                                        text.trim()
+                                }
+
+                            ]
+
+                        }
+
                     ],
 
-                    speechConfig: {
+                    config: {
 
-                        voiceConfig: {
+                        responseModalities: [
+                            "AUDIO"
+                        ],
 
-                            prebuiltVoiceConfig: {
+                        speechConfig: {
 
-                                voiceName:
-                                    voice || "Kore"
+                            voiceConfig: {
+
+                                prebuiltVoiceConfig: {
+
+                                    voiceName:
+                                        voice || "Kore"
+
+                                }
 
                             }
 
@@ -166,87 +249,150 @@ app.post("/tts", async (req, res) => {
 
                     }
 
-                }
-
-            });
+                });
 
 
-        const audioPart =
-            response
-                .candidates?.[0]
-                ?.content
-                ?.parts
-                ?.find(
-                    part =>
-                        part.inlineData
+            // ------------------------------
+            // FIND AUDIO
+            // ------------------------------
+
+            const audioPart =
+                response
+                    ?.candidates?.[0]
+                    ?.content?.parts
+                    ?.find(
+                        part =>
+                            part.inlineData &&
+                            part.inlineData.data
+                    );
+
+
+            if (!audioPart) {
+
+                console.error(
+                    "Gemini response:",
+                    JSON.stringify(
+                        response,
+                        null,
+                        2
+                    )
                 );
 
 
-        if (!audioPart) {
+                return res.status(500).json({
+
+                    error:
+                        "Gemini did not return audio."
+
+                });
+
+            }
+
+
+            // ------------------------------
+            // BASE64 → PCM
+            // ------------------------------
+
+            const pcm =
+                Buffer.from(
+                    audioPart.inlineData.data,
+                    "base64"
+                );
+
+
+            if (!pcm.length) {
+
+                return res.status(500).json({
+
+                    error:
+                        "Gemini returned empty audio."
+
+                });
+
+            }
+
 
             console.log(
-                "No audio returned"
+                "PCM bytes:",
+                pcm.length
             );
 
-            return res.status(500).json({
+
+            // ------------------------------
+            // PCM → WAV
+            // ------------------------------
+
+            const wav =
+                createWav(
+                    pcm,
+                    24000
+                );
+
+
+            // ------------------------------
+            // SEND AUDIO
+            // ------------------------------
+
+            res.status(200);
+
+            res.setHeader(
+                "Content-Type",
+                "audio/wav"
+            );
+
+            res.setHeader(
+                "Content-Length",
+                wav.length
+            );
+
+            res.setHeader(
+                "Content-Disposition",
+                'inline; filename="voice-over.wav"'
+            );
+
+
+            res.send(
+                wav
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "===================="
+            );
+
+            console.error(
+                "TTS ERROR"
+            );
+
+            console.error(
+                error
+            );
+
+            console.error(
+                "===================="
+            );
+
+
+            res.status(500).json({
 
                 error:
-                    "Gemini did not return audio"
+                    error.message ||
+                    "Voice generation failed"
 
             });
 
         }
 
-
-        const pcm =
-            Buffer.from(
-                audioPart.inlineData.data,
-                "base64"
-            );
-
-
-        const wav =
-            createWav(
-                pcm,
-                24000
-            );
-
-
-        res.setHeader(
-            "Content-Type",
-            "audio/wav"
-        );
-
-
-        res.setHeader(
-            "Content-Disposition",
-            'attachment; filename="voice-over.wav"'
-        );
-
-
-        res.send(wav);
-
     }
+);
 
-    catch (error) {
 
-        console.error(
-            "TTS ERROR:",
-            error
-        );
-
-        res.status(500).json({
-
-            error:
-                error.message ||
-                "Voice generation failed"
-
-        });
-
-    }
-
-});
-
+// ======================================
+// START SERVER
+// ======================================
 
 const PORT =
     process.env.PORT || 10000;
