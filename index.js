@@ -1,4 +1,4 @@
- // ======================================
+// ======================================
 // SUPABASE
 // ======================================
 
@@ -121,7 +121,9 @@ signupButton.addEventListener(
 
             }
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(error);
 
@@ -186,7 +188,9 @@ loginButton.addEventListener(
 
             }
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(error);
 
@@ -221,7 +225,9 @@ async function checkLogin() {
 
             showApp();
 
-        } else {
+        }
+
+        else {
 
             if (authScreen) {
                 authScreen.style.display = "flex";
@@ -233,7 +239,9 @@ async function checkLogin() {
 
         }
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(error);
 
@@ -302,6 +310,10 @@ const downloadButton =
 
 const voiceList = {
 
+    nigeriaMale: "Charon",
+
+    nigeriaFemale: "Aoede",
+
     ukMale: "Charon",
 
     ukFemale: "Aoede",
@@ -320,6 +332,10 @@ const voiceList = {
 voiceSelect.innerHTML = "";
 
 const options = [
+
+    ["nigeriaMale", "🇳🇬 Nigerian Man"],
+
+    ["nigeriaFemale", "🇳🇬 Nigerian Woman"],
 
     ["ukMale", "🇬🇧 UK Man"],
 
@@ -411,10 +427,10 @@ let currentAudioURL = null;
 
 async function generateAudio() {
 
-    const script =
+    const originalScript =
         text.value.trim();
 
-    if (!script) {
+    if (!originalScript) {
 
         status.textContent =
             "Please enter some text.";
@@ -423,13 +439,40 @@ async function generateAudio() {
 
     }
 
+
+    const selectedVoice =
+        voiceSelect.value;
+
+
     const voice =
-        voiceList[
-            voiceSelect.value
-        ];
+        voiceList[selectedVoice];
+
+
+    // ==================================
+    // NIGERIAN ENGLISH
+    // ==================================
+
+    let script =
+        originalScript;
+
+
+    if (
+        selectedVoice === "nigeriaMale" ||
+        selectedVoice === "nigeriaFemale"
+    ) {
+
+        script =
+            `Speak naturally in Nigerian English with a clear, authentic Nigerian English pronunciation. Keep the speech professional and easy to understand. Do not exaggerate the accent.
+
+Text:
+${originalScript}`;
+
+    }
+
 
     status.textContent =
         "⏳ Generating voice...";
+
 
     try {
 
@@ -486,6 +529,8 @@ async function generateAudio() {
         }
 
 
+        // Remove previous audio URL
+
         if (currentAudioURL) {
 
             URL.revokeObjectURL(
@@ -495,11 +540,15 @@ async function generateAudio() {
         }
 
 
+        // Create new audio URL
+
         currentAudioURL =
             URL.createObjectURL(
                 blob
             );
 
+
+        // Create audio player
 
         currentAudio =
             new Audio(
@@ -516,8 +565,18 @@ async function generateAudio() {
             };
 
 
+        currentAudio.onerror =
+            () => {
+
+                status.textContent =
+                    "❌ Audio could not be played.";
+
+            };
+
+
         status.textContent =
             "✅ Voice generated.";
+
 
         return {
 
@@ -562,15 +621,20 @@ playButton.addEventListener(
                     await generateAudio();
 
                 if (!result) {
+
                     return;
+
                 }
 
             }
 
+
             currentAudio.currentTime =
                 0;
 
+
             await currentAudio.play();
+
 
             status.textContent =
                 "🎤 Speaking...";
@@ -579,10 +643,13 @@ playButton.addEventListener(
 
         catch (error) {
 
-            console.error(error);
+            console.error(
+                "Play error:",
+                error
+            );
 
             status.textContent =
-                "❌ Unable to play audio.";
+                "❌ Unable to play voice.";
 
         }
 
@@ -607,7 +674,9 @@ pauseButton.addEventListener(
 
         }
 
+
         currentAudio.pause();
+
 
         status.textContent =
             "⏸ Paused.";
@@ -633,9 +702,11 @@ resumeButton.addEventListener(
 
         }
 
+
         try {
 
             await currentAudio.play();
+
 
             status.textContent =
                 "🎤 Speaking...";
@@ -644,7 +715,9 @@ resumeButton.addEventListener(
 
         catch (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
 
             status.textContent =
                 "❌ Unable to resume audio.";
@@ -672,10 +745,13 @@ stopButton.addEventListener(
 
         }
 
+
         currentAudio.pause();
+
 
         currentAudio.currentTime =
             0;
+
 
         status.textContent =
             "⏹ Stopped.";
@@ -696,19 +772,24 @@ downloadButton.addEventListener(
 
             let blob;
 
+
             if (!currentAudio) {
 
                 const result =
                     await generateAudio();
 
                 if (!result) {
+
                     return;
+
                 }
 
                 blob =
                     result.blob;
 
-            } else {
+            }
+
+            else {
 
                 const response =
                     await fetch(
