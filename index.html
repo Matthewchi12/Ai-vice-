@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
@@ -14,51 +15,186 @@
         rel="stylesheet"
         href="index.css"
     >
+
+    <style>
+        /* ==============================
+           LOGIN SCREEN
+        ============================== */
+
+        #authScreen {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 32px 24px;
+            border-radius: 20px;
+            background: white;
+            box-sizing: border-box;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+            text-align: center;
+        }
+
+        .auth-card h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .auth-subtitle {
+            margin: 0 0 28px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .auth-card h2 {
+            margin-bottom: 20px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 15px;
+            margin-bottom: 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .auth-input:focus {
+            border-color: #555;
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #loginButton {
+            background: #111;
+            color: white;
+        }
+
+        #signupButton {
+            background: #f0f0f0;
+            color: #111;
+            margin-top: 12px;
+        }
+
+        .auth-button:active {
+            transform: scale(0.98);
+        }
+
+        #authStatus {
+            min-height: 20px;
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+
+            #authScreen {
+                padding: 15px;
+            }
+
+            .auth-card {
+                padding: 28px 20px;
+            }
+
+            .auth-card h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+
 </head>
 
 <body>
-    <body>
+
+    <!-- ==============================
+         LOGIN / SIGN UP
+    ============================== -->
 
     <div id="authScreen">
 
-        <h1>🎙️ Voice Over Studio</h1>
+        <div class="auth-card">
 
-        <h2>Login</h2>
+            <h1>🎙️ Voice Over Studio</h1>
 
-        <input
-            type="email"
-            id="email"
-            placeholder="Email address"
-        >
+            <p class="auth-subtitle">
+                Create an account to start creating voice-overs.
+            </p>
 
-        <input
-            type="password"
-            id="password"
-            placeholder="Password"
-        >
+            <h2>Welcome</h2>
 
-        <button id="loginButton">
-            Login
-        </button>
+            <input
+                class="auth-input"
+                type="email"
+                id="email"
+                placeholder="Email address"
+                autocomplete="email"
+            >
 
-        <button id="signupButton">
-            Create Account
-        </button>
+            <input
+                class="auth-input"
+                type="password"
+                id="password"
+                placeholder="Password"
+                autocomplete="current-password"
+            >
 
-        <p id="authStatus"></p>
+            <button
+                class="auth-button"
+                id="loginButton"
+            >
+                Login
+            </button>
+
+            <button
+                class="auth-button"
+                id="signupButton"
+            >
+                Create Account
+            </button>
+
+            <p id="authStatus"></p>
+
+        </div>
 
     </div>
 
-    <div class="app" id="app" style="display: none;">
 
- <div class="app" id="app" style="display: none;">
+    <!-- ==============================
+         VOICE OVER STUDIO
+    ============================== -->
+
+    <div
+        class="app"
+        id="app"
+        style="display: none;"
+    >
 
         <header>
+
             <h1>🎙️ Voice Over Studio</h1>
 
             <p>
                 Turn your text into speech
             </p>
+
         </header>
 
 
@@ -95,9 +231,11 @@ Let's get started."
             </label>
 
             <select id="voice">
+
                 <option>
                     Loading voices...
                 </option>
+
             </select>
 
 
@@ -223,8 +361,11 @@ Let's get started."
     </div>
 
 
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="index.js"></script>
+    <!-- Supabase must load BEFORE index.js -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="index.js"></script>
 
 </body>
 
