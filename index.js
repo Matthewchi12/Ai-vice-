@@ -1,4 +1,23 @@
-   const text = document.getElementById("text");
+const SUPABASE_URL = "https://ihoxjwqlvuskkqrfowbr.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_TAesDbD1gUQ5p9IoYhZWJw_tBHL5g4F";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+const authScreen = document.getElementById("authScreen");
+const app = document.getElementById("app");
+
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+
+const loginButton = document.getElementById("loginButton");
+const signupButton = document.getElementById("signupButton");
+
+const authStatus = document.getElementById("authStatus");
+const text = document.getElementById("text");
 const voiceSelect = document.getElementById("voice");
 
 const rate = document.getElementById("rate");
