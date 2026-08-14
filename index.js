@@ -225,9 +225,7 @@ async function checkLogin() {
 
             showApp();
 
-        }
-
-        else {
+        } else {
 
             if (authScreen) {
                 authScreen.style.display = "flex";
@@ -253,7 +251,7 @@ checkLogin();
 
 
 // ======================================
-// RENDER VOICE BACKEND
+// RENDER BACKEND
 // ======================================
 
 const API_URL =
@@ -305,7 +303,7 @@ const downloadButton =
 
 
 // ======================================
-// VOICES
+// GEMINI VOICES
 // ======================================
 
 const voiceList = {
@@ -333,17 +331,17 @@ voiceSelect.innerHTML = "";
 
 const options = [
 
-    ["nigeriaMale", "🇳🇬 Nigerian Man"],
+    ["nigeriaMale", "🇳🇬 Nigerian Male"],
 
-    ["nigeriaFemale", "🇳🇬 Nigerian Woman"],
+    ["nigeriaFemale", "🇳🇬 Nigerian Female"],
 
-    ["ukMale", "🇬🇧 UK Man"],
+    ["ukMale", "🇬🇧 UK Male"],
 
-    ["ukFemale", "🇬🇧 UK Woman"],
+    ["ukFemale", "🇬🇧 UK Female"],
 
-    ["usMale", "🇺🇸 American Man"],
+    ["usMale", "🇺🇸 American Male"],
 
-    ["usFemale", "🇺🇸 American Woman"]
+    ["usFemale", "🇺🇸 American Female"]
 
 ];
 
@@ -449,20 +447,72 @@ async function generateAudio() {
 
 
     // ==================================
-    // NIGERIAN ENGLISH
+    // VOICE INSTRUCTIONS
     // ==================================
 
     let script =
         originalScript;
 
 
-    if (
-        selectedVoice === "nigeriaMale" ||
-        selectedVoice === "nigeriaFemale"
-    ) {
+    if (selectedVoice === "nigeriaMale") {
 
         script =
-            `Speak naturally in Nigerian English with a clear, authentic Nigerian English pronunciation. Keep the speech professional and easy to understand. Do not exaggerate the accent.
+            `Speak this text naturally using a clear Nigerian English male speaking style. Use natural Nigerian English pronunciation. Keep the voice professional, warm and easy to understand. Do not exaggerate the accent.
+
+Text:
+${originalScript}`;
+
+    }
+
+
+    if (selectedVoice === "nigeriaFemale") {
+
+        script =
+            `Speak this text naturally using a clear Nigerian English female speaking style. Use natural Nigerian English pronunciation. Keep the voice professional, warm and easy to understand. Do not exaggerate the accent.
+
+Text:
+${originalScript}`;
+
+    }
+
+
+    if (selectedVoice === "ukMale") {
+
+        script =
+            `Speak this text naturally using a clear British English male speaking style. Use natural UK English pronunciation. Keep the voice professional and easy to understand.
+
+Text:
+${originalScript}`;
+
+    }
+
+
+    if (selectedVoice === "ukFemale") {
+
+        script =
+            `Speak this text naturally using a clear British English female speaking style. Use natural UK English pronunciation. Keep the voice professional and easy to understand.
+
+Text:
+${originalScript}`;
+
+    }
+
+
+    if (selectedVoice === "usMale") {
+
+        script =
+            `Speak this text naturally using a clear American English male speaking style. Use natural American English pronunciation. Keep the voice professional and easy to understand.
+
+Text:
+${originalScript}`;
+
+    }
+
+
+    if (selectedVoice === "usFemale") {
+
+        script =
+            `Speak this text naturally using a clear American English female speaking style. Use natural American English pronunciation. Keep the voice professional and easy to understand.
 
 Text:
 ${originalScript}`;
@@ -529,8 +579,6 @@ ${originalScript}`;
         }
 
 
-        // Remove previous audio URL
-
         if (currentAudioURL) {
 
             URL.revokeObjectURL(
@@ -540,15 +588,11 @@ ${originalScript}`;
         }
 
 
-        // Create new audio URL
-
         currentAudioURL =
             URL.createObjectURL(
                 blob
             );
 
-
-        // Create audio player
 
         currentAudio =
             new Audio(
@@ -715,9 +759,7 @@ resumeButton.addEventListener(
 
         catch (error) {
 
-            console.error(
-                error
-            );
+            console.error(error);
 
             status.textContent =
                 "❌ Unable to resume audio.";
@@ -748,10 +790,8 @@ stopButton.addEventListener(
 
         currentAudio.pause();
 
-
         currentAudio.currentTime =
             0;
-
 
         status.textContent =
             "⏹ Stopped.";
