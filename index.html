@@ -103,6 +103,22 @@
             font-size: 14px;
         }
 
+        /* ==============================
+           VOICE SELECT
+        ============================== */
+
+        #voice {
+            width: 100%;
+            padding: 14px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
         /* Mobile */
         @media (max-width: 480px) {
 
@@ -226,18 +242,46 @@ Let's get started."
             </div>
 
 
+            <!-- ==============================
+                 VOICE SELECTION
+            ============================== -->
+
             <label for="voice">
                 🎙️ Select voice
             </label>
 
             <select id="voice">
 
-                <option>
-                    Loading voices...
+                <option value="nigeriaMale">
+                    🇳🇬 Nigerian Male
+                </option>
+
+                <option value="nigeriaFemale">
+                    🇳🇬 Nigerian Female
+                </option>
+
+                <option value="ukFemale">
+                    🇬🇧 UK Female
+                </option>
+
+                <option value="ukMale">
+                    🇬🇧 UK Male
+                </option>
+
+                <option value="usFemale">
+                    🇺🇸 American Female
+                </option>
+
+                <option value="usMale">
+                    🇺🇸 American Male
                 </option>
 
             </select>
 
+
+            <!-- ==============================
+                 CONTROLS
+            ============================== -->
 
             <div class="controls">
 
@@ -287,6 +331,10 @@ Let's get started."
             </div>
 
 
+            <!-- ==============================
+                 AUDIO BUTTONS
+            ============================== -->
+
             <div class="buttons">
 
                 <button id="play">
@@ -308,6 +356,10 @@ Let's get started."
             </div>
 
 
+            <!-- ==============================
+                 DOWNLOAD
+            ============================== -->
+
             <div class="download-area">
 
                 <button
@@ -318,12 +370,15 @@ Let's get started."
                 </button>
 
                 <p id="downloadMessage">
-                    Browser speech cannot be directly
-                    exported as MP3.
+                    Generated audio can be downloaded here.
                 </p>
 
             </div>
 
+
+            <!-- ==============================
+                 STATUS
+            ============================== -->
 
             <div
                 id="status"
@@ -334,6 +389,10 @@ Let's get started."
 
         </main>
 
+
+        <!-- ==============================
+             TIPS
+        ============================== -->
 
         <section class="tips">
 
@@ -361,9 +420,14 @@ Let's get started."
     </div>
 
 
-    <!-- Supabase must load BEFORE index.js -->
+    <!-- ==============================
+         SUPABASE
+         MUST LOAD BEFORE index.js
+    ============================== -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- YOUR JAVASCRIPT -->
 
     <script src="index.js"></script>
 
