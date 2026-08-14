@@ -1,510 +1,395 @@
+ // ============================================
+// VOICE OVER STUDIO - index.js
+// ============================================
+
 const text = document.getElementById("text");
-const voiceSelect = document.getElementById("voice");
+const voice = document.getElementById("voice");
+
+const playButton = document.getElementById("play");
+const pauseButton = document.getElementById("pause");
+const stopButton = document.getElementById("stop");
+const generateButton = document.getElementById("generate");
+const downloadButton = document.getElementById("download");
+
+const audio = document.getElementById("audio");
+const status = document.getElementById("status");
 
 const rate = document.getElementById("rate");
 const pitch = document.getElementById("pitch");
 
-const rateValue = document.getElementById("rateValue");
-const pitchValue = document.getElementById("pitchValue");
 
-const count = document.getElementById("count");
-const status = document.getElementById("status");
+// ============================================
+// AUDIO FILE
+// ============================================
 
-const playButton = document.getElementById("play");
-const pauseButton = document.getElementById("pause");
-const resumeButton = document.getElementById("resume");
-const stopButton = document.getElementById("stop");
+let audioURL = null;
 
 
-// ==========================================
-// BROWSER SPEECH ENGINE
-// ==========================================
+// ============================================
+// AVAILABLE HUMAN VOICES
+// ============================================
 
-const synth = window.speechSynthesis;
+const voices = {
 
-let voices = [];
-
-
-// ==========================================
-// ONLY THESE FOUR VOICE OPTIONS
-// ==========================================
-
-const voiceTypes = {
-
-    ukMan: {
-        language: "en-GB",
-        gender: "male"
+    ukMale: {
+        name: "UK Male",
+        id: "en-GB-male"
     },
 
-    ukWoman: {
-        language: "en-GB",
-        gender: "female"
+    ukFemale: {
+        name: "UK Female",
+        id: "en-GB-female"
     },
 
-    usMan: {
-        language: "en-US",
-        gender: "male"
+    usMale: {
+        name: "American Male",
+        id: "en-US-male"
     },
 
-    usWoman: {
-        language: "en-US",
-        gender: "female"
+    usFemale: {
+        name: "American Female",
+        id: "en-US-female"
     }
 
 };
 
 
-// ==========================================
-// LOAD AVAILABLE BROWSER VOICES
-// ==========================================
+// ============================================
+// LOAD VOICES INTO SELECT
+// ============================================
 
 function loadVoices() {
 
-    voices = synth.getVoices();
+    voice.innerHTML = "";
 
-    if (!voices.length) {
-        return;
-    }
+    Object.entries(voices).forEach(
+        ([key, data]) => {
 
-    voiceSelect.innerHTML = "";
+            const option =
+                document.createElement("option");
 
+            option.value = data.id;
 
-    // UK MAN
-    addVoiceOption(
-        "ukMan",
-        "🇬🇧 UK Man"
+            option.textContent =
+                data.name;
+
+            voice.appendChild(option);
+
+        }
     );
-
-
-    // US MAN
-    addVoiceOption(
-        "usMan",
-        "🇺🇸 American Man"
-    );
-
-
-    // UK WOMAN
-    addVoiceOption(
-        "ukWoman",
-        "🇬🇧 UK Woman"
-    );
-
-
-    // US WOMAN
-    addVoiceOption(
-        "usWoman",
-        "🇺🇸 American Woman"
-    );
-
-
-    // Select UK Man by default
-
-    voiceSelect.value = "ukMan";
 
 }
 
 
-// ==========================================
-// CREATE THE FOUR OPTIONS
-// ==========================================
-
-function addVoiceOption(
-    value,
-    text
-) {
-
-    const option =
-        document.createElement("option");
-
-    option.value = value;
-
-    option.textContent = text;
-
-    voiceSelect.appendChild(option);
-
-}
-
-
-// ==========================================
-// FIND THE BEST AVAILABLE VOICE
-// ==========================================
-
-function findVoice(
-    type
-) {
-
-    const settings =
-        voiceTypes[type];
-
-
-    const language =
-        settings.language;
-
-
-    const gender =
-        settings.gender;
-
-
-    // --------------------------------------
-    // FIRST: Try exact language
-    // --------------------------------------
-
-    let matches =
-        voices.filter(
-            voice =>
-                voice.lang === language
-        );
-
-
-    // --------------------------------------
-    // SECOND: Try language prefix
-    // --------------------------------------
-
-    if (!matches.length) {
-
-        matches =
-            voices.filter(
-                voice =>
-                    voice.lang
-                        .toLowerCase()
-                        .startsWith(
-                            language
-                                .substring(0, 2)
-                                .toLowerCase()
-                        )
-            );
-
-    }
-
-
-    // --------------------------------------
-    // Look for gender in voice name
-    // --------------------------------------
-
-    const genderMatches =
-        matches.filter(
-            voice => {
-
-                const name =
-                    voice.name.toLowerCase();
-
-
-                if (
-                    gender === "male"
-                ) {
-
-                    return (
-                        name.includes("male") ||
-                        name.includes("man") ||
-                        name.includes("guy") ||
-                        name.includes("david") ||
-                        name.includes("daniel") ||
-                        name.includes("george") ||
-                        name.includes("alex")
-                    );
-
-                }
-
-
-                if (
-                    gender === "female"
-                ) {
-
-                    return (
-                        name.includes("female") ||
-                        name.includes("woman") ||
-                        name.includes("samantha") ||
-                        name.includes("zira") ||
-                        name.includes("susan") ||
-                        name.includes("hazel") ||
-                        name.includes("sara") ||
-                        name.includes("victoria")
-                    );
-
-                }
-
-
-                return false;
-
-            }
-        );
-
-
-    if (genderMatches.length) {
-
-        return genderMatches[0];
-
-    }
-
-
-    // --------------------------------------
-    // If gender isn't exposed by browser,
-    // use a sensible voice from that language
-    // --------------------------------------
-
-    if (matches.length) {
-
-        return matches[0];
-
-    }
-
-
-    return null;
-
-}
-
-
-// ==========================================
-// LOAD VOICES
-// ==========================================
-
+// Load voices
 loadVoices();
 
 
-if (
-    "onvoiceschanged" in synth
-) {
+// ============================================
+// GENERATE HUMAN VOICE
+// ============================================
 
-    synth.onvoiceschanged =
-        loadVoices;
+generateButton.addEventListener(
+    "click",
+    async function () {
 
-}
-
-
-// ==========================================
-// CHARACTER COUNTER
-// ==========================================
-
-text.addEventListener(
-    "input",
-    function () {
-
-        count.textContent =
-            text.value.length;
-
-    }
-);
+        const script =
+            text.value.trim();
 
 
-// ==========================================
-// SPEED
-// ==========================================
+        if (!script) {
 
-rate.addEventListener(
-    "input",
-    function () {
+            status.textContent =
+                "Please enter your script.";
 
-        rateValue.textContent =
-            rate.value;
+            return;
 
-    }
-);
+        }
 
-
-// ==========================================
-// PITCH
-// ==========================================
-
-pitch.addEventListener(
-    "input",
-    function () {
-
-        pitchValue.textContent =
-            pitch.value;
-
-    }
-);
-
-
-// ==========================================
-// CREATE SPEECH
-// ==========================================
-
-function createSpeech() {
-
-    const value =
-        text.value.trim();
-
-
-    if (!value) {
 
         status.textContent =
-            "Please enter your script.";
+            "🎤 Creating natural human voice...";
 
-        return null;
+
+        generateButton.disabled =
+            true;
+
+        downloadButton.disabled =
+            true;
+
+
+        try {
+
+            /*
+             * IMPORTANT:
+             *
+             * Replace this URL with the
+             * TTS provider you choose.
+             */
+
+            const response =
+                await fetch(
+                    "YOUR_TTS_API_ENDPOINT",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body: JSON.stringify({
+
+                            text: script,
+
+                            voice:
+                                voice.value,
+
+                            rate:
+                                Number(rate.value),
+
+                            pitch:
+                                Number(pitch.value),
+
+                            format:
+                                "mp3"
+
+                        })
+
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "TTS request failed"
+                );
+
+            }
+
+
+            // ==================================
+            // GET ACTUAL MP3
+            // ==================================
+
+            const blob =
+                await response.blob();
+
+
+            if (!blob.size) {
+
+                throw new Error(
+                    "Empty audio file"
+                );
+
+            }
+
+
+            // Remove previous audio URL
+
+            if (audioURL) {
+
+                URL.revokeObjectURL(
+                    audioURL
+                );
+
+            }
+
+
+            // Create new MP3 URL
+
+            audioURL =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            // ==================================
+            // PUT AUDIO INTO PLAYER
+            // ==================================
+
+            audio.src =
+                audioURL;
+
+
+            audio.style.display =
+                "block";
+
+
+            audio.load();
+
+
+            // ==================================
+            // ENABLE BUTTONS
+            // ==================================
+
+            playButton.disabled =
+                false;
+
+            pauseButton.disabled =
+                false;
+
+            stopButton.disabled =
+                false;
+
+            downloadButton.disabled =
+                false;
+
+
+            status.textContent =
+                "✅ Voice-over ready. Press Play to listen.";
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                "❌ Could not generate the voice.";
+
+        }
+
+        finally {
+
+            generateButton.disabled =
+                false;
+
+        }
 
     }
+);
 
 
-    const selectedType =
-        voiceSelect.value;
-
-
-    const selectedVoice =
-        findVoice(
-            selectedType
-        );
-
-
-    if (!selectedVoice) {
-
-        status.textContent =
-            "This voice is not available on your device.";
-
-        return null;
-
-    }
-
-
-    const speech =
-        new SpeechSynthesisUtterance(
-            value
-        );
-
-
-    speech.voice =
-        selectedVoice;
-
-
-    speech.lang =
-        selectedVoice.lang;
-
-
-    speech.rate =
-        Number(rate.value);
-
-
-    speech.pitch =
-        Number(pitch.value);
-
-
-    speech.volume =
-        1;
-
-
-    return speech;
-
-}
-
-
-// ==========================================
+// ============================================
 // PLAY
-// ==========================================
+// ============================================
 
 playButton.addEventListener(
     "click",
     function () {
 
-        const speech =
-            createSpeech();
+        if (!audioURL) {
 
+            status.textContent =
+                "Generate the voice first.";
 
-        if (!speech) {
             return;
+
         }
 
 
-        synth.cancel();
+        audio.play();
 
 
-        speech.onstart =
-            function () {
-
-                status.textContent =
-                    "🔊 Speaking...";
-
-            };
-
-
-        speech.onend =
-            function () {
-
-                status.textContent =
-                    "Finished.";
-
-            };
-
-
-        speech.onerror =
-            function (event) {
-
-                console.log(
-                    event
-                );
-
-
-                status.textContent =
-                    "Unable to play this voice.";
-
-            };
-
-
-        synth.speak(
-            speech
-        );
+        status.textContent =
+            "▶️ Playing...";
 
     }
 );
 
 
-// ==========================================
+// ============================================
 // PAUSE
-// ==========================================
+// ============================================
 
 pauseButton.addEventListener(
     "click",
     function () {
 
-        if (
-            synth.speaking
-        ) {
+        audio.pause();
 
-            synth.pause();
 
-            status.textContent =
-                "⏸ Paused.";
-
-        }
+        status.textContent =
+            "⏸️ Paused.";
 
     }
 );
 
 
-// ==========================================
-// RESUME
-// ==========================================
-
-resumeButton.addEventListener(
-    "click",
-    function () {
-
-        if (
-            synth.paused
-        ) {
-
-            synth.resume();
-
-            status.textContent =
-                "▶ Speaking...";
-
-        }
-
-    }
-);
-
-
-// ==========================================
+// ============================================
 // STOP
-// ==========================================
+// ============================================
 
 stopButton.addEventListener(
     "click",
     function () {
 
-        synth.cancel();
+        audio.pause();
+
+        audio.currentTime =
+            0;
+
 
         status.textContent =
-            "⏹ Stopped.";
+            "⏹️ Stopped.";
+
+    }
+);
+
+
+// ============================================
+// DOWNLOAD MP3
+// ============================================
+
+downloadButton.addEventListener(
+    "click",
+    function () {
+
+        if (!audioURL) {
+
+            status.textContent =
+                "Generate the voice first.";
+
+            return;
+
+        }
+
+
+        const link =
+            document.createElement("a");
+
+
+        link.href =
+            audioURL;
+
+
+        link.download =
+            "my-voiceover.mp3";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        link.remove();
+
+
+        status.textContent =
+            "⬇️ MP3 downloaded. You can import it into CapCut.";
+
+    }
+);
+
+
+// ============================================
+// WHEN AUDIO FINISHES
+// ============================================
+
+audio.addEventListener(
+    "ended",
+    function () {
+
+        status.textContent =
+            "Voice-over finished.";
 
     }
 );
