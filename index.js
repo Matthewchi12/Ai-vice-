@@ -6,6 +6,64 @@ const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+signupButton.addEventListener("click", async () => {
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+        authStatus.textContent = "Please enter your email and password.";
+        return;
+    }
+
+    if (password.length < 6) {
+        authStatus.textContent = "Password must be at least 6 characters.";
+        return;
+    }
+
+    authStatus.textContent = "Creating account...";
+
+    const { error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        authStatus.textContent = error.message;
+        return;
+    }
+
+    authStatus.textContent =
+        "Account created! Check your email to confirm your account.";
+});
+loginButton.addEventListener("click", async () => {
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+        authStatus.textContent = "Please enter your email and password.";
+        return;
+    }
+
+    authStatus.textContent = "Logging in...";
+
+    const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+    if (error) {
+        authStatus.textContent = error.message;
+        return;
+    }
+
+    authStatus.textContent = "Login successful!";
+
+    authScreen.style.display = "none";
+    app.style.display = "block";
+});
 
 const authScreen = document.getElementById("authScreen");
 const app = document.getElementById("app");
