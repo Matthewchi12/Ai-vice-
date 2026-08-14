@@ -320,3 +320,147 @@ button:hover {
     }
 
 }
+/* ==============================
+   PROFESSIONAL LOGIN SCREEN
+============================== */
+
+#authScreen {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 38px 32px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-sizing: border-box;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.10);
+    text-align: left;
+}
+
+.auth-card h1 {
+    margin: 0;
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.auth-subtitle {
+    margin: 10px 0 30px;
+    text-align: center;
+    color: #777;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.auth-card h2 {
+    margin: 0 0 18px;
+    font-size: 21px;
+    font-weight: 600;
+}
+
+/* INPUTS */
+
+.auth-input {
+    display: block;
+    width: 100%;
+    height: 50px;
+    padding: 0 15px;
+    margin: 0 0 16px;
+    border: 1px solid #d9d9d9;
+    border-radius: 9px;
+    background: #fafafa;
+    box-sizing: border-box;
+    font-size: 15px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.auth-input:focus {
+    border-color: #222;
+    background: #ffffff;
+}
+
+/* BUTTONS */
+
+.auth-button {
+    display: block;
+    width: 100%;
+    height: 46px;
+    padding: 0 15px;
+    margin: 0;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* LOGIN */
+
+#loginButton {
+    background: #111111;
+    color: white;
+}
+
+#loginButton:hover {
+    background: #2a2a2a;
+}
+
+/* SIGN UP */
+
+#signupButton {
+    margin-top: 12px;
+    background: #eeeeee;
+    color: #111111;
+}
+
+#signupButton:hover {
+    background: #e2e2e2;
+}
+
+/* CLICK EFFECT */
+
+.auth-button:active {
+    transform: scale(0.98);
+}
+
+/* STATUS MESSAGE */
+
+#authStatus {
+    min-height: 20px;
+    margin: 18px 0 0;
+    text-align: center;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* MOBILE */
+
+@media (max-width: 480px) {
+
+    #authScreen {
+        padding: 16px;
+    }
+
+    .auth-card {
+        padding: 30px 22px;
+        border-radius: 16px;
+    }
+
+    .auth-card h1 {
+        font-size: 23px;
+    }
+
+    .auth-card h2 {
+        font-size: 20px;
+    }
+}
