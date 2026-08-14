@@ -1,4 +1,4 @@
- const text = document.getElementById("text");
+  const text = document.getElementById("text");
 const voiceSelect = document.getElementById("voice");
 
 const rate = document.getElementById("rate");
@@ -14,110 +14,72 @@ const playButton = document.getElementById("play");
 const pauseButton = document.getElementById("pause");
 const resumeButton = document.getElementById("resume");
 const stopButton = document.getElementById("stop");
-
-const synth = window.speechSynthesis;
-
-let voices = [];
+const downloadButton = document.getElementById("download");
 
 
 // ======================================
-// LOAD VOICES
+// RENDER BACKEND
 // ======================================
 
-function loadVoices() {
+const API_URL =
+    "https://ai-voice-backend-pl9h.onrender.com/tts";
 
-    voices = synth.getVoices();
 
-    console.log("Voices:", voices);
+// ======================================
+// GEMINI VOICES
+// ======================================
 
-    voiceSelect.innerHTML = "";
+const voices = {
 
-    if (voices.length === 0) {
+    ukMale: "Charon",
+
+    ukFemale: "Aoede",
+
+    usMale: "Puck",
+
+    usFemale: "Kore"
+
+};
+
+
+voiceSelect.innerHTML = "";
+
+const voiceOptions = [
+
+    ["ukMale", "🇬🇧 UK Man"],
+
+    ["ukFemale", "🇬🇧 UK Woman"],
+
+    ["usMale", "🇺🇸 American Man"],
+
+    ["usFemale", "🇺🇸 American Woman"]
+
+];
+
+
+voiceOptions.forEach(
+    ([value, name]) => {
 
         const option =
             document.createElement("option");
 
-        option.textContent =
-            "Loading voices...";
+        option.value = value;
+
+        option.textContent = name;
 
         voiceSelect.appendChild(option);
 
-        return;
     }
-
-
-    // Show available English voices
-
-    const englishVoices =
-        voices.filter(
-            voice =>
-                voice.lang
-                    .toLowerCase()
-                    .startsWith("en")
-        );
-
-
-    englishVoices.forEach(
-        (voice, index) => {
-
-            const option =
-                document.createElement("option");
-
-            option.value =
-                voice.name;
-
-            option.textContent =
-                `${voice.name} (${voice.lang})`;
-
-            voiceSelect.appendChild(option);
-
-        }
-    );
-
-
-    // If no English voice exists,
-    // show all voices
-
-    if (englishVoices.length === 0) {
-
-        voices.forEach(
-            voice => {
-
-                const option =
-                    document.createElement("option");
-
-                option.value =
-                    voice.name;
-
-                option.textContent =
-                    `${voice.name} (${voice.lang})`;
-
-                voiceSelect.appendChild(option);
-
-            }
-        );
-
-    }
-
-}
-
-
-// Try immediately
-loadVoices();
-
-
-// Some browsers load them later
-synth.onvoiceschanged =
-    loadVoices;
+);
 
 
 // ======================================
-// CHARACTER COUNTER
+// CHARACTER COUNT
 // ======================================
 
 text.addEventListener(
     "input",
-    function () {
+    () => {
 
         count.textContent =
             text.value.length;
@@ -132,7 +94,7 @@ text.addEventListener(
 
 rate.addEventListener(
     "input",
-    function () {
+    () => {
 
         rateValue.textContent =
             rate.value;
@@ -147,7 +109,7 @@ rate.addEventListener(
 
 pitch.addEventListener(
     "input",
-    function () {
+    () => {
 
         pitchValue.textContent =
             pitch.value;
@@ -157,129 +119,177 @@ pitch.addEventListener(
 
 
 // ======================================
-// GET SELECTED VOICE
+// GENERATE AUDIO
 // ======================================
 
-function getSelectedVoice() {
+async function generateAudio() {
 
-    const selectedName =
-        voiceSelect.value;
+    const script =
+        text.value.trim();
+
+    if (!script) {
+
+        status.textContent =
+            "Please enter your script.";
+
+        return null;
+
+    }
 
 
-    return voices.find(
-        voice =>
-            voice.name ===
-            selectedName
-    );
+    const selectedVoice =
+        voices[voiceSelect.value];
+
+
+    status.textContent =
+        "⏳ Generating voice...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL,
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        text: script,
+
+                        voice:
+                            selectedVoice
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Voice generation failed."
+            );
+
+        }
+
+
+        if (!data.audio) {
+
+            throw new Error(
+                "No audio was returned."
+            );
+
+        }
+
+
+        const mimeType =
+            data.mimeType ||
+            "audio/wav";
+
+
+        const binary =
+            atob(data.audio);
+
+
+        const bytes =
+            new Uint8Array(
+                binary.length
+            );
+
+
+        for (
+            let i = 0;
+            i < binary.length;
+            i++
+        ) {
+
+            bytes[i] =
+                binary.charCodeAt(i);
+
+        }
+
+
+        const blob =
+            new Blob(
+                [bytes],
+                {
+                    type: mimeType
+                }
+            );
+
+
+        const audioURL =
+            URL.createObjectURL(blob);
+
+
+        status.textContent =
+            "✅ Voice generated.";
+
+        return {
+            blob,
+            audioURL
+        };
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "❌ " + error.message;
+
+        return null;
+
+    }
 
 }
 
 
 // ======================================
-// SPEAK
+// PLAY
 // ======================================
 
 playButton.addEventListener(
     "click",
-    function () {
+    async () => {
 
-        const message =
-            text.value.trim();
-
-
-        if (!message) {
-
-            status.textContent =
-                "Please type something first.";
-
-            return;
-
-        }
+        const result =
+            await generateAudio();
 
 
-        // Stop anything currently speaking
-
-        synth.cancel();
+        if (!result) return;
 
 
-        const utterance =
-            new SpeechSynthesisUtterance(
-                message
+        const audio =
+            new Audio(
+                result.audioURL
             );
 
 
-        const selectedVoice =
-            getSelectedVoice();
+        audio.play();
 
 
-        if (selectedVoice) {
-
-            utterance.voice =
-                selectedVoice;
-
-            utterance.lang =
-                selectedVoice.lang;
-
-        } else {
-
-            // Safe fallback
-
-            utterance.lang =
-                "en-US";
-
-        }
-
-
-        utterance.rate =
-            Number(rate.value);
-
-
-        utterance.pitch =
-            Number(pitch.value);
-
-
-        utterance.volume =
-            1;
-
-
-        utterance.onstart =
-            function () {
+        audio.onended =
+            () => {
 
                 status.textContent =
-                    "🎤 Speaking...";
+                    "Finished.";
 
             };
-
-
-        utterance.onend =
-            function () {
-
-                status.textContent =
-                    "✅ Finished.";
-
-            };
-
-
-        utterance.onerror =
-            function (event) {
-
-                console.log(
-                    "Speech error:",
-                    event
-                );
-
-
-                status.textContent =
-                    "❌ Speech failed.";
-
-            };
-
-
-        // Speak
-
-        synth.speak(
-            utterance
-        );
 
     }
 );
@@ -289,13 +299,16 @@ playButton.addEventListener(
 // PAUSE
 // ======================================
 
+let currentAudio = null;
+
+
 pauseButton.addEventListener(
     "click",
-    function () {
+    () => {
 
-        if (synth.speaking) {
+        if (currentAudio) {
 
-            synth.pause();
+            currentAudio.pause();
 
             status.textContent =
                 "⏸ Paused.";
@@ -312,14 +325,14 @@ pauseButton.addEventListener(
 
 resumeButton.addEventListener(
     "click",
-    function () {
+    () => {
 
-        if (synth.paused) {
+        if (currentAudio) {
 
-            synth.resume();
+            currentAudio.play();
 
             status.textContent =
-                "▶️ Speaking...";
+                "▶ Speaking...";
 
         }
 
@@ -333,12 +346,63 @@ resumeButton.addEventListener(
 
 stopButton.addEventListener(
     "click",
-    function () {
+    () => {
 
-        synth.cancel();
+        if (currentAudio) {
+
+            currentAudio.pause();
+
+            currentAudio.currentTime = 0;
+
+        }
 
         status.textContent =
             "⏹ Stopped.";
+
+    }
+);
+
+
+// ======================================
+// DOWNLOAD
+// ======================================
+
+downloadButton.addEventListener(
+    "click",
+    async () => {
+
+        const result =
+            await generateAudio();
+
+
+        if (!result) return;
+
+
+        const link =
+            document.createElement("a");
+
+
+        link.href =
+            result.audioURL;
+
+
+        link.download =
+            "voice-over.wav";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        link.remove();
+
+
+        status.textContent =
+            "⬇️ Audio downloaded.";
 
     }
 );
