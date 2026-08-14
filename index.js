@@ -1,4 +1,4 @@
-  const text = document.getElementById("text");
+   const text = document.getElementById("text");
 const voiceSelect = document.getElementById("voice");
 
 const rate = document.getElementById("rate");
@@ -18,7 +18,7 @@ const downloadButton = document.getElementById("download");
 
 
 // ======================================
-// RENDER BACKEND
+// YOUR RENDER BACKEND
 // ======================================
 
 const API_URL =
@@ -29,7 +29,7 @@ const API_URL =
 // GEMINI VOICES
 // ======================================
 
-const voices = {
+const voiceList = {
 
     ukMale: "Charon",
 
@@ -42,80 +42,74 @@ const voices = {
 };
 
 
+// ======================================
+// CREATE VOICE OPTIONS
+// ======================================
+
 voiceSelect.innerHTML = "";
 
-const voiceOptions = [
-
+const options = [
     ["ukMale", "🇬🇧 UK Man"],
-
     ["ukFemale", "🇬🇧 UK Woman"],
-
     ["usMale", "🇺🇸 American Man"],
-
     ["usFemale", "🇺🇸 American Woman"]
-
 ];
 
+options.forEach(([value, name]) => {
 
-voiceOptions.forEach(
-    ([value, name]) => {
+    const option =
+        document.createElement("option");
 
-        const option =
-            document.createElement("option");
+    option.value = value;
+    option.textContent = name;
 
-        option.value = value;
+    voiceSelect.appendChild(option);
 
-        option.textContent = name;
-
-        voiceSelect.appendChild(option);
-
-    }
-);
+});
 
 
 // ======================================
 // CHARACTER COUNT
 // ======================================
 
-text.addEventListener(
-    "input",
-    () => {
+text.addEventListener("input", () => {
 
-        count.textContent =
-            text.value.length;
+    count.textContent =
+        text.value.length;
 
-    }
-);
+});
 
 
 // ======================================
 // SPEED
 // ======================================
 
-rate.addEventListener(
-    "input",
-    () => {
+rate.addEventListener("input", () => {
 
-        rateValue.textContent =
-            rate.value;
+    rateValue.textContent =
+        rate.value;
 
-    }
-);
+});
 
 
 // ======================================
 // PITCH
 // ======================================
 
-pitch.addEventListener(
-    "input",
-    () => {
+pitch.addEventListener("input", () => {
 
-        pitchValue.textContent =
-            pitch.value;
+    pitchValue.textContent =
+        pitch.value;
 
-    }
-);
+});
+
+
+// ======================================
+// AUDIO VARIABLES
+// ======================================
+
+let currentAudio = null;
+let currentAudioURL = null;
 
 
 // ======================================
@@ -130,15 +124,17 @@ async function generateAudio() {
     if (!script) {
 
         status.textContent =
-            "Please enter your script.";
+            "Please enter some text.";
 
         return null;
 
     }
 
 
-    const selectedVoice =
-        voices[voiceSelect.value];
+    const voice =
+        voiceList[
+            voiceSelect.value
+        ];
 
 
     status.textContent =
@@ -155,16 +151,17 @@ async function generateAudio() {
                     method: "POST",
 
                     headers: {
+
                         "Content-Type":
                             "application/json"
+
                     },
 
                     body: JSON.stringify({
 
                         text: script,
 
-                        voice:
-                            selectedVoice
+                        voice: voice
 
                     })
 
@@ -172,75 +169,59 @@ async function generateAudio() {
             );
 
 
-        const data =
-            await response.json();
-
-
         if (!response.ok) {
 
-            throw new Error(
-                data.error ||
-                "Voice generation failed."
-            );
-
-        }
-
-
-        if (!data.audio) {
+            const errorText =
+                await response.text();
 
             throw new Error(
-                "No audio was returned."
+                errorText ||
+                "Server error"
             );
-
-        }
-
-
-        const mimeType =
-            data.mimeType ||
-            "audio/wav";
-
-
-        const binary =
-            atob(data.audio);
-
-
-        const bytes =
-            new Uint8Array(
-                binary.length
-            );
-
-
-        for (
-            let i = 0;
-            i < binary.length;
-            i++
-        ) {
-
-            bytes[i] =
-                binary.charCodeAt(i);
 
         }
 
 
         const blob =
-            new Blob(
-                [bytes],
-                {
-                    type: mimeType
-                }
+            await response.blob();
+
+
+        if (!blob.size) {
+
+            throw new Error(
+                "The server returned an empty audio file."
+            );
+
+        }
+
+
+        if (currentAudioURL) {
+
+            URL.revokeObjectURL(
+                currentAudioURL
+            );
+
+        }
+
+
+        currentAudioURL =
+            URL.createObjectURL(
+                blob
             );
 
 
-        const audioURL =
-            URL.createObjectURL(blob);
+        currentAudio =
+            new Audio(
+                currentAudioURL
+            );
 
 
         status.textContent =
             "✅ Voice generated.";
 
         return {
-            blob,
-            audioURL
+            blob: blob,
+            url: currentAudioURL
         };
 
     }
@@ -267,23 +248,25 @@ playButton.addEventListener(
     "click",
     async () => {
 
-        const result =
-            await generateAudio();
+        if (!currentAudio) {
+
+            const result =
+                await generateAudio();
+
+            if (!result) return;
+
+        }
 
 
-        if (!result) return;
+        currentAudio.currentTime = 0;
+
+        currentAudio.play();
+
+        status.textContent =
+            "🎤 Speaking...";
 
 
-        const audio =
-            new Audio(
-                result.audioURL
-            );
-
-
-        audio.play();
-
-
-        audio.onended =
+        currentAudio.onended =
             () => {
 
                 status.textContent =
@@ -299,21 +282,24 @@ playButton.addEventListener(
 // PAUSE
 // ======================================
 
-let currentAudio = null;
-
-
 pauseButton.addEventListener(
     "click",
     () => {
 
-        if (currentAudio) {
-
-            currentAudio.pause();
+        if (!currentAudio) {
 
             status.textContent =
-                "⏸ Paused.";
+                "Nothing is playing.";
+
+            return;
 
         }
+
+
+        currentAudio.pause();
+
+        status.textContent =
+            "⏸ Paused.";
 
     }
 );
@@ -327,14 +313,20 @@ resumeButton.addEventListener(
     "click",
     () => {
 
-        if (currentAudio) {
-
-            currentAudio.play();
+        if (!currentAudio) {
 
             status.textContent =
-                "▶ Speaking...";
+                "Generate a voice first.";
+
+            return;
 
         }
+
+
+        currentAudio.play();
+
+        status.textContent =
+            "🎤 Speaking...";
 
     }
 );
@@ -348,13 +340,19 @@ stopButton.addEventListener(
     "click",
     () => {
 
-        if (currentAudio) {
+        if (!currentAudio) {
 
-            currentAudio.pause();
+            status.textContent =
+                "Nothing is playing.";
 
-            currentAudio.currentTime = 0;
+            return;
 
         }
+
+
+        currentAudio.pause();
+
+        currentAudio.currentTime = 0;
 
         status.textContent =
             "⏹ Stopped.";
@@ -371,38 +369,91 @@ downloadButton.addEventListener(
     "click",
     async () => {
 
-        const result =
-            await generateAudio();
+        let result;
 
 
-        if (!result) return;
+        if (!currentAudio) {
+
+            result =
+                await generateAudio();
+
+            if (!result) return;
+
+        }
+
+        else {
+
+            result = {
+
+                blob:
+                    await fetch(
+                        currentAudioURL
+                    ).then(
+                        response =>
+                            response.blob()
+                    ),
+
+                url:
+                    currentAudioURL
+
+            };
+
+        }
 
 
-        const link =
-            document.createElement("a");
+        try {
+
+            const downloadURL =
+                URL.createObjectURL(
+                    result.blob
+                );
 
 
-        link.href =
-            result.audioURL;
+            const link =
+                document.createElement("a");
 
 
-        link.download =
-            "voice-over.wav";
+            link.href =
+                downloadURL;
 
 
-        document.body.appendChild(
-            link
-        );
+            link.download =
+                "voice-over.wav";
 
 
-        link.click();
+            document.body.appendChild(
+                link
+            );
 
 
-        link.remove();
+            link.click();
 
 
-        status.textContent =
-            "⬇️ Audio downloaded.";
+            link.remove();
+
+
+            setTimeout(() => {
+
+                URL.revokeObjectURL(
+                    downloadURL
+                );
+
+            }, 2000);
+
+
+            status.textContent =
+                "⬇️ Download started. Check your Downloads folder.";
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                "❌ Download failed.";
+
+        }
 
     }
 );
