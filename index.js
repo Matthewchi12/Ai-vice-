@@ -1,4 +1,4 @@
-const text = document.getElementById("text");
+ const text = document.getElementById("text");
 const voiceSelect = document.getElementById("voice");
 
 const rate = document.getElementById("rate");
@@ -14,7 +14,6 @@ const playButton = document.getElementById("play");
 const pauseButton = document.getElementById("pause");
 const resumeButton = document.getElementById("resume");
 const stopButton = document.getElementById("stop");
-const downloadButton = document.getElementById("download");
 
 const synth = window.speechSynthesis;
 
@@ -29,181 +28,254 @@ function loadVoices() {
 
     voices = synth.getVoices();
 
+    console.log("Voices:", voices);
+
     voiceSelect.innerHTML = "";
 
-    const options = [
-        ["ukMale", "🇬🇧 UK Man"],
-        ["ukFemale", "🇬🇧 UK Woman"],
-        ["usMale", "🇺🇸 American Man"],
-        ["usFemale", "🇺🇸 American Woman"]
-    ];
-
-    options.forEach(([value, name]) => {
+    if (voices.length === 0) {
 
         const option =
             document.createElement("option");
 
-        option.value = value;
-
-        option.textContent = name;
+        option.textContent =
+            "Loading voices...";
 
         voiceSelect.appendChild(option);
 
-    });
-}
-
-loadVoices();
-
-synth.onvoiceschanged = loadVoices;
-
-
-// ======================================
-// FIND VOICE
-// ======================================
-
-function findVoice(type) {
-
-    let language = "";
-    let genderWords = [];
-
-    if (type === "ukMale") {
-        language = "en-GB";
-        genderWords = [
-            "male",
-            "man",
-            "daniel",
-            "george",
-            "oliver"
-        ];
+        return;
     }
 
-    if (type === "ukFemale") {
-        language = "en-GB";
-        genderWords = [
-            "female",
-            "woman",
-            "hazel",
-            "susan",
-            "victoria"
-        ];
-    }
 
-    if (type === "usMale") {
-        language = "en-US";
-        genderWords = [
-            "male",
-            "man",
-            "david",
-            "mark",
-            "alex"
-        ];
-    }
+    // Show available English voices
 
-    if (type === "usFemale") {
-        language = "en-US";
-        genderWords = [
-            "female",
-            "woman",
-            "samantha",
-            "zira",
-            "susan"
-        ];
-    }
+    const englishVoices =
+        voices.filter(
+            voice =>
+                voice.lang
+                    .toLowerCase()
+                    .startsWith("en")
+        );
 
-    let matches = voices.filter(
-        voice =>
-            voice.lang === language
-    );
 
-    let genderMatch = matches.find(
-        voice => {
+    englishVoices.forEach(
+        (voice, index) => {
 
-            const name =
-                voice.name.toLowerCase();
+            const option =
+                document.createElement("option");
 
-            return genderWords.some(
-                word =>
-                    name.includes(word)
-            );
+            option.value =
+                voice.name;
+
+            option.textContent =
+                `${voice.name} (${voice.lang})`;
+
+            voiceSelect.appendChild(option);
+
         }
     );
 
-    return genderMatch || matches[0];
+
+    // If no English voice exists,
+    // show all voices
+
+    if (englishVoices.length === 0) {
+
+        voices.forEach(
+            voice => {
+
+                const option =
+                    document.createElement("option");
+
+                option.value =
+                    voice.name;
+
+                option.textContent =
+                    `${voice.name} (${voice.lang})`;
+
+                voiceSelect.appendChild(option);
+
+            }
+        );
+
+    }
+
+}
+
+
+// Try immediately
+loadVoices();
+
+
+// Some browsers load them later
+synth.onvoiceschanged =
+    loadVoices;
+
+
+// ======================================
+// CHARACTER COUNTER
+// ======================================
+
+text.addEventListener(
+    "input",
+    function () {
+
+        count.textContent =
+            text.value.length;
+
+    }
+);
+
+
+// ======================================
+// SPEED
+// ======================================
+
+rate.addEventListener(
+    "input",
+    function () {
+
+        rateValue.textContent =
+            rate.value;
+
+    }
+);
+
+
+// ======================================
+// PITCH
+// ======================================
+
+pitch.addEventListener(
+    "input",
+    function () {
+
+        pitchValue.textContent =
+            pitch.value;
+
+    }
+);
+
+
+// ======================================
+// GET SELECTED VOICE
+// ======================================
+
+function getSelectedVoice() {
+
+    const selectedName =
+        voiceSelect.value;
+
+
+    return voices.find(
+        voice =>
+            voice.name ===
+            selectedName
+    );
+
 }
 
 
 // ======================================
-// CREATE SPEECH
-// ======================================
-
-function createSpeech() {
-
-    const value =
-        text.value.trim();
-
-    if (!value) {
-
-        status.textContent =
-            "Please enter some text.";
-
-        return null;
-    }
-
-    const utterance =
-        new SpeechSynthesisUtterance(value);
-
-    const selectedVoice =
-        findVoice(voiceSelect.value);
-
-    if (selectedVoice) {
-
-        utterance.voice =
-            selectedVoice;
-
-        utterance.lang =
-            selectedVoice.lang;
-    }
-
-    utterance.rate =
-        Number(rate.value);
-
-    utterance.pitch =
-        Number(pitch.value);
-
-    utterance.volume = 1;
-
-    return utterance;
-}
-
-
-// ======================================
-// PLAY
+// SPEAK
 // ======================================
 
 playButton.addEventListener(
     "click",
-    () => {
+    function () {
 
-        const utterance =
-            createSpeech();
+        const message =
+            text.value.trim();
 
-        if (!utterance) return;
+
+        if (!message) {
+
+            status.textContent =
+                "Please type something first.";
+
+            return;
+
+        }
+
+
+        // Stop anything currently speaking
 
         synth.cancel();
 
-        utterance.onstart = () => {
 
-            status.textContent =
-                "🎤 Speaking...";
+        const utterance =
+            new SpeechSynthesisUtterance(
+                message
+            );
 
-        };
 
-        utterance.onend = () => {
+        const selectedVoice =
+            getSelectedVoice();
 
-            status.textContent =
-                "Finished.";
 
-        };
+        if (selectedVoice) {
+
+            utterance.voice =
+                selectedVoice;
+
+            utterance.lang =
+                selectedVoice.lang;
+
+        } else {
+
+            // Safe fallback
+
+            utterance.lang =
+                "en-US";
+
+        }
+
+
+        utterance.rate =
+            Number(rate.value);
+
+
+        utterance.pitch =
+            Number(pitch.value);
+
+
+        utterance.volume =
+            1;
+
+
+        utterance.onstart =
+            function () {
+
+                status.textContent =
+                    "🎤 Speaking...";
+
+            };
+
+
+        utterance.onend =
+            function () {
+
+                status.textContent =
+                    "✅ Finished.";
+
+            };
+
+
+        utterance.onerror =
+            function (event) {
+
+                console.log(
+                    "Speech error:",
+                    event
+                );
+
+
+                status.textContent =
+                    "❌ Speech failed.";
+
+            };
+
+
+        // Speak
 
         synth.speak(
             utterance
@@ -219,12 +291,16 @@ playButton.addEventListener(
 
 pauseButton.addEventListener(
     "click",
-    () => {
+    function () {
 
-        synth.pause();
+        if (synth.speaking) {
 
-        status.textContent =
-            "Paused.";
+            synth.pause();
+
+            status.textContent =
+                "⏸ Paused.";
+
+        }
 
     }
 );
@@ -236,12 +312,16 @@ pauseButton.addEventListener(
 
 resumeButton.addEventListener(
     "click",
-    () => {
+    function () {
 
-        synth.resume();
+        if (synth.paused) {
 
-        status.textContent =
-            "Speaking...";
+            synth.resume();
+
+            status.textContent =
+                "▶️ Speaking...";
+
+        }
 
     }
 );
@@ -253,310 +333,12 @@ resumeButton.addEventListener(
 
 stopButton.addEventListener(
     "click",
-    () => {
+    function () {
 
         synth.cancel();
 
         status.textContent =
-            "Stopped.";
-
-    }
-);
-
-
-// ======================================
-// SPEED
-// ======================================
-
-rate.addEventListener(
-    "input",
-    () => {
-
-        rateValue.textContent =
-            rate.value;
-
-    }
-);
-
-
-// ======================================
-// PITCH
-// ======================================
-
-pitch.addEventListener(
-    "input",
-    () => {
-
-        pitchValue.textContent =
-            pitch.value;
-
-    }
-);
-
-
-// ======================================
-// CHARACTER COUNT
-// ======================================
-
-text.addEventListener(
-    "input",
-    () => {
-
-        count.textContent =
-            text.value.length;
-
-    }
-);
-
-
-// ======================================
-// DOWNLOAD
-// ======================================
-
-downloadButton.addEventListener(
-    "click",
-    async () => {
-
-        status.textContent =
-            "Preparing browser audio...";
-
-        /*
-        IMPORTANT:
-
-        The browser's SpeechSynthesis API
-        does NOT expose its audio stream.
-
-        Therefore JavaScript cannot directly
-        record speechSynthesis into a WebM/MP3
-        file.
-
-        The browser must provide an audio
-        capture stream, such as tab/system
-        audio capture.
-        */
-
-
-        if (
-            !navigator.mediaDevices ||
-            !navigator.mediaDevices.getDisplayMedia
-        ) {
-
-            status.textContent =
-                "Your browser does not support browser audio capture.";
-
-            return;
-        }
-
-
-        try {
-
-            status.textContent =
-                "Choose this browser tab and enable audio.";
-
-            const displayStream =
-                await navigator
-                    .mediaDevices
-                    .getDisplayMedia({
-
-                        video: true,
-
-                        audio: true
-
-                    });
-
-
-            const audioTracks =
-                displayStream.getAudioTracks();
-
-
-            if (!audioTracks.length) {
-
-                displayStream
-                    .getTracks()
-                    .forEach(
-                        track =>
-                            track.stop()
-                    );
-
-                status.textContent =
-                    "Audio sharing was not enabled.";
-
-                return;
-            }
-
-
-            const audioStream =
-                new MediaStream(
-                    audioTracks
-                );
-
-
-            const recorder =
-                new MediaRecorder(
-                    audioStream
-                );
-
-
-            const chunks = [];
-
-
-            recorder.ondataavailable =
-                event => {
-
-                    if (
-                        event.data.size > 0
-                    ) {
-
-                        chunks.push(
-                            event.data
-                        );
-
-                    }
-
-                };
-
-
-            recorder.onstop =
-                () => {
-
-                    const blob =
-                        new Blob(
-                            chunks,
-                            {
-                                type:
-                                    "audio/webm"
-                            }
-                        );
-
-
-                    const url =
-                        URL.createObjectURL(
-                            blob
-                        );
-
-
-                    const link =
-                        document.createElement(
-                            "a"
-                        );
-
-
-                    link.href = url;
-
-                    link.download =
-                        "voice-over.webm";
-
-
-                    document.body.appendChild(
-                        link
-                    );
-
-
-                    link.click();
-
-
-                    link.remove();
-
-
-                    URL.revokeObjectURL(
-                        url
-                    );
-
-
-                    displayStream
-                        .getTracks()
-                        .forEach(
-                            track =>
-                                track.stop()
-                        );
-
-
-                    status.textContent =
-                        "✅ Audio downloaded. Import voice-over.webm into CapCut.";
-
-                };
-
-
-            recorder.start();
-
-
-            const utterance =
-                createSpeech();
-
-
-            if (!utterance) {
-
-                recorder.stop();
-
-                return;
-            }
-
-
-            utterance.onstart =
-                () => {
-
-                    status.textContent =
-                        "🎤 Recording voice...";
-
-                };
-
-
-            utterance.onend =
-                () => {
-
-                    setTimeout(
-                        () => {
-
-                            if (
-                                recorder.state !==
-                                "inactive"
-                            ) {
-
-                                recorder.stop();
-
-                            }
-
-                        },
-                        500
-                    );
-
-                };
-
-
-            utterance.onerror =
-                () => {
-
-                    if (
-                        recorder.state !==
-                        "inactive"
-                    ) {
-
-                        recorder.stop();
-
-                    }
-
-                    status.textContent =
-                        "Speech generation failed.";
-
-                };
-
-
-            synth.cancel();
-
-            synth.speak(
-                utterance
-            );
-
-        }
-
-        catch (error) {
-
-            console.error(error);
-
-            status.textContent =
-                "Audio recording was cancelled or unavailable.";
-
-        }
+            "⏹ Stopped.";
 
     }
 );
