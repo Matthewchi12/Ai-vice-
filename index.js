@@ -235,7 +235,7 @@ signupButton.addEventListener(
         emailRedirectTo: "https://matthewchi12.github.io/Ai-vice-/"
     }
 });
-                });
+    
 
             if (error) {
                 throw error;
