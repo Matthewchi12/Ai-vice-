@@ -1,6 +1,6 @@
-// ======================================
+// ============================================
 // SUPABASE
-// ======================================
+// ============================================
 
 const SUPABASE_URL =
     "https://ihoxjwqlvuskkqrfowbr.supabase.co";
@@ -15,9 +15,9 @@ const supabaseClient =
     );
 
 
-// ======================================
+// ============================================
 // BACKEND
-// ======================================
+// ============================================
 
 const API_BASE_URL =
     "https://ai-voice-backend-pl9h.onrender.com";
@@ -26,9 +26,9 @@ const API_URL =
     `${API_BASE_URL}/tts`;
 
 
-// ======================================
-// AUTH ELEMENTS
-// ======================================
+// ============================================
+// ELEMENTS
+// ============================================
 
 const authScreen =
     document.getElementById("authScreen");
@@ -51,395 +51,14 @@ const signupButton =
 const authStatus =
     document.getElementById("authStatus");
 
-
-// ======================================
-// AUTH STATUS MESSAGE
-// ======================================
-
-function showAuthMessage(message) {
-
-    if (authStatus) {
-        authStatus.textContent = message;
-    }
-
-}
-
-
-// ======================================
-// SHOW LOGIN
-// ======================================
-
-function showLogin() {
-
-    if (authScreen) {
-        authScreen.style.display = "flex";
-    }
-
-    if (app) {
-        app.style.display = "none";
-    }
-
-}
-
-
-// ======================================
-// SHOW APP
-// ======================================
-
-async function showApp() {
-
-    if (authScreen) {
-        authScreen.style.display = "none";
-    }
-
-    if (app) {
-        app.style.display = "block";
-    }
-
-    await loadSubscriptionStatus();
-
-}
-
-
-// ======================================
-// SIGN UP
-// ======================================
-
-if (signupButton) {
-
-    signupButton.addEventListener(
-        "click",
-        async () => {
-
-            const email =
-                emailInput.value.trim();
-
-            const password =
-                passwordInput.value;
-
-            if (!email || !password) {
-
-                showAuthMessage(
-                    "Please enter your email and password."
-                );
-
-                return;
-            }
-
-            if (password.length < 6) {
-
-                showAuthMessage(
-                    "Password must be at least 6 characters."
-                );
-
-                return;
-            }
-
-            showAuthMessage(
-                "Creating account..."
-            );
-
-            signupButton.disabled = true;
-
-            try {
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.auth.signUp({
-                        email: email,
-                        password: password
-                    });
-
-                console.log(
-                    "Signup response:",
-                    data
-                );
-
-                if (error) {
-
-                    console.error(
-                        "Signup error:",
-                        error
-                    );
-
-                    showAuthMessage(
-                        error.message
-                    );
-
-                    return;
-                }
-
-                if (data.session) {
-
-                    showAuthMessage(
-                        "Account created successfully."
-                    );
-
-                    await showApp();
-
-                } else {
-
-                    showAuthMessage(
-                        "Account created. Check your email and confirm your account before logging in."
-                    );
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Signup exception:",
-                    error
-                );
-
-                showAuthMessage(
-                    error.message ||
-                    "Unable to create account."
-                );
-
-            } finally {
-
-                signupButton.disabled = false;
-
-            }
-
-        }
-    );
-
-}
-
-
-// ======================================
-// LOGIN
-// ======================================
-
-if (loginButton) {
-
-    loginButton.addEventListener(
-        "click",
-        async () => {
-
-            const email =
-                emailInput.value.trim();
-
-            const password =
-                passwordInput.value;
-
-            if (!email || !password) {
-
-                showAuthMessage(
-                    "Please enter your email and password."
-                );
-
-                return;
-            }
-
-            showAuthMessage(
-                "Logging in..."
-            );
-
-            loginButton.disabled = true;
-
-            try {
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-
-                console.log(
-                    "Login response:",
-                    data
-                );
-
-                if (error) {
-
-                    console.error(
-                        "Login error:",
-                        error
-                    );
-
-                    showAuthMessage(
-                        error.message
-                    );
-
-                    return;
-                }
-
-                if (!data.session) {
-
-                    showAuthMessage(
-                        "Login failed. No session was created."
-                    );
-
-                    return;
-                }
-
-                showAuthMessage(
-                    "Login successful."
-                );
-
-                await showApp();
-
-            } catch (error) {
-
-                console.error(
-                    "Login exception:",
-                    error
-                );
-
-                showAuthMessage(
-                    error.message ||
-                    "Unable to login."
-                );
-
-            } finally {
-
-                loginButton.disabled = false;
-
-            }
-
-        }
-    );
-
-}
-
-
-// ======================================
-// AUTH STATE
-// ======================================
-
-supabaseClient.auth.onAuthStateChange(
-    async (event, session) => {
-
-        console.log(
-            "Auth event:",
-            event
-        );
-
-        console.log(
-            "Session:",
-            session
-        );
-
-        if (session) {
-
-            await showApp();
-
-        } else {
-
-            showLogin();
-
-        }
-
-    }
-);
-
-
-// ======================================
-// CHECK EXISTING SESSION
-// ======================================
-
-async function checkLogin() {
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth.getSession();
-
-        if (error) {
-
-            console.error(
-                "Session error:",
-                error
-            );
-
-            showLogin();
-
-            return;
-        }
-
-        if (data.session) {
-
-            console.log(
-                "Existing session found."
-            );
-
-            await showApp();
-
-        } else {
-
-            console.log(
-                "No existing session."
-            );
-
-            showLogin();
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Check login error:",
-            error
-        );
-
-        showLogin();
-
-    }
-
-}
-
-
-// ======================================
-// LOGOUT FUNCTION
-// ======================================
-
-async function logout() {
-
-    try {
-
-        const {
-            error
-        } =
-            await supabaseClient.auth.signOut();
-
-        if (error) {
-            throw error;
-        }
-
-        showLogin();
-
-    } catch (error) {
-
-        console.error(
-            "Logout error:",
-            error
-        );
-
-    }
-
-}
-
-
-// ======================================
-// VOICE ELEMENTS
-// ======================================
-
 const text =
     document.getElementById("text");
 
 const voiceSelect =
     document.getElementById("voice");
+
+const count =
+    document.getElementById("count");
 
 const rate =
     document.getElementById("rate");
@@ -452,9 +71,6 @@ const rateValue =
 
 const pitchValue =
     document.getElementById("pitchValue");
-
-const count =
-    document.getElementById("count");
 
 const status =
     document.getElementById("status");
@@ -474,10 +90,43 @@ const stopButton =
 const downloadButton =
     document.getElementById("download");
 
+const pricing =
+    document.getElementById("pricing");
 
-// ======================================
+const subscriptionButton =
+    document.getElementById("subscriptionButton");
+
+const limitSubscribeButton =
+    document.getElementById("limitSubscribeButton");
+
+const limitMessage =
+    document.getElementById("limitMessage");
+
+const freeUsageText =
+    document.getElementById("freeUsageText");
+
+const paymentStatus =
+    document.getElementById("paymentStatus");
+
+
+// ============================================
+// SETTINGS
+// ============================================
+
+const FREE_GENERATIONS = 5;
+
+let subscriptionActive = false;
+
+let freeUses = 0;
+
+let currentAudio = null;
+
+let currentAudioURL = null;
+
+
+// ============================================
 // VOICES
-// ======================================
+// ============================================
 
 const voiceList = {
 
@@ -496,135 +145,349 @@ const voiceList = {
 };
 
 
-// ======================================
-// CREATE VOICE OPTIONS
-// ======================================
+// ============================================
+// AUTH MESSAGE
+// ============================================
 
-if (voiceSelect) {
+function showAuthMessage(message) {
 
-    voiceSelect.innerHTML = "";
-
-    const options = [
-
-        ["nigeriaMale", "🇳🇬 Nigerian Male"],
-
-        ["nigeriaFemale", "🇳🇬 Nigerian Female"],
-
-        ["ukMale", "🇬🇧 UK Male"],
-
-        ["ukFemale", "🇬🇧 UK Female"],
-
-        ["usMale", "🇺🇸 American Male"],
-
-        ["usFemale", "🇺🇸 American Female"]
-
-    ];
-
-    options.forEach(
-        ([value, name]) => {
-
-            const option =
-                document.createElement("option");
-
-            option.value =
-                value;
-
-            option.textContent =
-                name;
-
-            voiceSelect.appendChild(
-                option
-            );
-
-        }
-    );
+    authStatus.textContent = message;
 
 }
 
 
-// ======================================
-// SUBSCRIPTION
-// ======================================
+// ============================================
+// SHOW LOGIN
+// ============================================
 
-const pricingSection =
-    document.getElementById("pricing");
+function showLogin() {
 
-const paymentStatus =
-    document.getElementById("paymentStatus");
+    authScreen.style.display = "flex";
 
-const subscriptionButton =
-    document.getElementById(
-        "subscriptionButton"
-    );
+    app.style.display = "none";
 
-const limitSubscribeButton =
-    document.getElementById(
-        "limitSubscribeButton"
-    );
-
-const freeUsageText =
-    document.getElementById(
-        "freeUsageText"
-    );
-
-const limitMessage =
-    document.getElementById(
-        "limitMessage"
-    );
+}
 
 
-let subscriptionActive =
-    false;
+// ============================================
+// SHOW APP
+// ============================================
 
-let freeUses =
-    0;
+async function showApp() {
 
-const FREE_GENERATIONS =
-    5;
+    authScreen.style.display = "none";
+
+    app.style.display = "block";
+
+    await loadSubscriptionStatus();
+
+}
 
 
-// ======================================
+// ============================================
+// SIGN UP
+// ============================================
+
+signupButton.addEventListener(
+    "click",
+    async () => {
+
+        const email =
+            emailInput.value.trim();
+
+        const password =
+            passwordInput.value;
+
+        if (!email || !password) {
+
+            showAuthMessage(
+                "Enter your email and password."
+            );
+
+            return;
+        }
+
+        if (password.length < 6) {
+
+            showAuthMessage(
+                "Password must be at least 6 characters."
+            );
+
+            return;
+        }
+
+        signupButton.disabled = true;
+
+        showAuthMessage(
+            "Creating account..."
+        );
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.auth.signUp({
+                    email,
+                    password
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            if (data.session) {
+
+                showAuthMessage(
+                    "Account created successfully."
+                );
+
+                await showApp();
+
+            } else {
+
+                showAuthMessage(
+                    "Account created. Check your email to confirm your account."
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            showAuthMessage(
+                error.message
+            );
+
+        } finally {
+
+            signupButton.disabled = false;
+
+        }
+
+    }
+);
+
+
+// ============================================
+// LOGIN
+// ============================================
+
+loginButton.addEventListener(
+    "click",
+    async () => {
+
+        const email =
+            emailInput.value.trim();
+
+        const password =
+            passwordInput.value;
+
+        if (!email || !password) {
+
+            showAuthMessage(
+                "Enter your email and password."
+            );
+
+            return;
+        }
+
+        loginButton.disabled = true;
+
+        showAuthMessage(
+            "Logging in..."
+        );
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            if (!data.session) {
+
+                throw new Error(
+                    "Login failed. No session created."
+                );
+
+            }
+
+            showAuthMessage(
+                "Login successful."
+            );
+
+            await showApp();
+
+        } catch (error) {
+
+            console.error(error);
+
+            showAuthMessage(
+                error.message
+            );
+
+        } finally {
+
+            loginButton.disabled = false;
+
+        }
+
+    }
+);
+
+
+// ============================================
+// CHECK LOGIN
+// ============================================
+
+async function checkLogin() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getSession();
+
+        if (error) {
+            throw error;
+        }
+
+        if (data.session) {
+
+            await showApp();
+
+        } else {
+
+            showLogin();
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Session error:",
+            error
+        );
+
+        showLogin();
+
+    }
+
+}
+
+
+// ============================================
+// AUTH STATE
+// ============================================
+
+supabaseClient.auth.onAuthStateChange(
+    async (event, session) => {
+
+        if (session) {
+
+            await showApp();
+
+        } else {
+
+            showLogin();
+
+        }
+
+    }
+);
+
+
+// ============================================
+// CHARACTER COUNT
+// ============================================
+
+text.addEventListener(
+    "input",
+    () => {
+
+        count.textContent =
+            text.value.length;
+
+    }
+);
+
+
+// ============================================
+// SPEED
+// ============================================
+
+rate.addEventListener(
+    "input",
+    () => {
+
+        rateValue.textContent =
+            rate.value;
+
+    }
+);
+
+
+// ============================================
+// PITCH
+// ============================================
+
+pitch.addEventListener(
+    "input",
+    () => {
+
+        pitchValue.textContent =
+            pitch.value;
+
+    }
+);
+
+
+// ============================================
 // SUBSCRIPTION DISPLAY
-// ======================================
+// ============================================
 
 function updateSubscriptionDisplay() {
-
-    if (!freeUsageText) {
-        return;
-    }
 
     if (subscriptionActive) {
 
         freeUsageText.textContent =
             "Subscription active";
 
-    } else {
-
-        const remaining =
-            Math.max(
-                0,
-                FREE_GENERATIONS - freeUses
-            );
-
-        freeUsageText.textContent =
-            `${remaining} free generation${
-                remaining === 1 ? "" : "s"
-            } remaining`;
-
+        return;
     }
+
+    const remaining =
+        Math.max(
+            0,
+            FREE_GENERATIONS - freeUses
+        );
+
+    freeUsageText.textContent =
+        `${remaining} free generation${
+            remaining === 1 ? "" : "s"
+        } remaining`;
 
 }
 
 
-// ======================================
-// LIMIT DISPLAY
-// ======================================
+// ============================================
+// LIMIT
+// ============================================
 
 function updateLimitDisplay() {
-
-    if (!limitMessage) {
-        return;
-    }
 
     if (
         !subscriptionActive &&
@@ -644,69 +507,45 @@ function updateLimitDisplay() {
 }
 
 
-// ======================================
-// SHOW PRICING
-// ======================================
+// ============================================
+// PRICING
+// ============================================
 
 function showPricing() {
 
-    if (!pricingSection) {
-        return;
-    }
-
-    pricingSection.style.display =
+    pricing.style.display =
         "block";
 
-    pricingSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+    pricing.scrollIntoView({
+        behavior: "smooth"
     });
 
 }
 
 
-// ======================================
-// HIDE PRICING
-// ======================================
-
 function hidePricing() {
 
-    if (pricingSection) {
-
-        pricingSection.style.display =
-            "none";
-
-    }
+    pricing.style.display =
+        "none";
 
 }
 
 
-// ======================================
-// SUBSCRIPTION BUTTONS
-// ======================================
-
-if (subscriptionButton) {
-
-    subscriptionButton.addEventListener(
-        "click",
-        showPricing
-    );
-
-}
-
-if (limitSubscribeButton) {
-
-    limitSubscribeButton.addEventListener(
-        "click",
-        showPricing
-    );
-
-}
+subscriptionButton.addEventListener(
+    "click",
+    showPricing
+);
 
 
-// ======================================
+limitSubscribeButton.addEventListener(
+    "click",
+    showPricing
+);
+
+
+// ============================================
 // LOAD SUBSCRIPTION
-// ======================================
+// ============================================
 
 async function loadSubscriptionStatus() {
 
@@ -722,10 +561,7 @@ async function loadSubscriptionStatus() {
             throw error;
         }
 
-        const session =
-            data.session;
-
-        if (!session) {
+        if (!data.session) {
             return;
         }
 
@@ -736,29 +572,24 @@ async function loadSubscriptionStatus() {
                     method: "GET",
 
                     headers: {
-                        "Authorization":
-                            `Bearer ${session.access_token}`
+                        Authorization:
+                            `Bearer ${data.session.access_token}`
                     }
                 }
             );
 
-        const result =
-            await response.json();
-
-        console.log(
-            "Subscription response:",
-            result
-        );
-
         if (!response.ok) {
 
             console.error(
-                "Subscription error:",
-                result
+                "Subscription endpoint returned:",
+                response.status
             );
 
             return;
         }
+
+        const result =
+            await response.json();
 
         subscriptionActive =
             result.active === true;
@@ -769,24 +600,19 @@ async function loadSubscriptionStatus() {
             );
 
         updateSubscriptionDisplay();
+
         updateLimitDisplay();
 
         if (subscriptionActive) {
 
             hidePricing();
 
-        } else if (
-            freeUses >= FREE_GENERATIONS
-        ) {
-
-            showPricing();
-
         }
 
     } catch (error) {
 
         console.error(
-            "Subscription loading error:",
+            "Subscription error:",
             error
         );
 
@@ -795,152 +621,66 @@ async function loadSubscriptionStatus() {
 }
 
 
-// ======================================
-// CHARACTER COUNT
-// ======================================
-
-if (text) {
-
-    text.addEventListener(
-        "input",
-        () => {
-
-            if (count) {
-
-                count.textContent =
-                    text.value.length;
-
-            }
-
-        }
-    );
-
-}
-
-
-// ======================================
-// SPEED
-// ======================================
-
-if (rate) {
-
-    rate.addEventListener(
-        "input",
-        () => {
-
-            if (rateValue) {
-
-                rateValue.textContent =
-                    rate.value;
-
-            }
-
-        }
-    );
-
-}
-
-
-// ======================================
-// PITCH
-// ======================================
-
-if (pitch) {
-
-    pitch.addEventListener(
-        "input",
-        () => {
-
-            if (pitchValue) {
-
-                pitchValue.textContent =
-                    pitch.value;
-
-            }
-
-        }
-    );
-
-}
-
-
-// ======================================
-// AUDIO
-// ======================================
-
-let currentAudio =
-    null;
-
-let currentAudioURL =
-    null;
-
-
-// ======================================
-// BUILD VOICE SCRIPT
-// ======================================
+// ============================================
+// BUILD SCRIPT
+// ============================================
 
 function buildVoiceScript(
-    originalScript,
+    originalText,
     selectedVoice
 ) {
 
     const instructions = {
 
         nigeriaMale:
-            "Speak naturally in clear Nigerian English with a natural male speaking style. Keep the pronunciation clear, warm and professional.",
+            "Speak naturally in clear Nigerian English with a natural male voice. Keep the pronunciation clear, warm and professional.",
 
         nigeriaFemale:
-            "Speak naturally in clear Nigerian English with a natural female speaking style. Keep the pronunciation clear, warm and professional.",
+            "Speak naturally in clear Nigerian English with a natural female voice. Keep the pronunciation clear, warm and professional.",
 
         ukMale:
-            "Speak naturally in clear British English with a natural male speaking style. Keep the pronunciation clear and professional.",
+            "Speak naturally in clear British English with a natural male voice. Keep the pronunciation clear and professional.",
 
         ukFemale:
-            "Speak naturally in clear British English with a natural female speaking style. Keep the pronunciation clear and professional.",
+            "Speak naturally in clear British English with a natural female voice. Keep the pronunciation clear and professional.",
 
         usMale:
-            "Speak naturally in clear American English with a natural male speaking style. Keep the pronunciation clear and professional.",
+            "Speak naturally in clear American English with a natural male voice. Keep the pronunciation clear and professional.",
 
         usFemale:
-            "Speak naturally in clear American English with a natural female speaking style. Keep the pronunciation clear and professional."
+            "Speak naturally in clear American English with a natural female voice. Keep the pronunciation clear and professional."
 
     };
 
     return `
-${instructions[selectedVoice] || ""}
+${instructions[selectedVoice]}
 
 Read the following text naturally:
 
-${originalScript}
+${originalText}
 `;
 
 }
 
 
-// ======================================
+// ============================================
 // GENERATE AUDIO
-// ======================================
+// ============================================
 
 async function generateAudio() {
 
-    if (!text) {
-        return null;
-    }
-
-    const originalScript =
+    const originalText =
         text.value.trim();
 
-    if (!originalScript) {
+    if (!originalText) {
 
-        if (status) {
-
-            status.textContent =
-                "Please enter some text.";
-
-        }
+        status.textContent =
+            "Please enter some text.";
 
         return null;
+
     }
+
 
     const {
         data,
@@ -948,39 +688,21 @@ async function generateAudio() {
     } =
         await supabaseClient.auth.getSession();
 
-    if (error) {
+    if (error || !data.session) {
 
-        console.error(
-            "Session error:",
-            error
-        );
-
-        if (status) {
-
-            status.textContent =
-                "Please login again.";
-
-        }
-
-        return null;
-    }
-
-    const session =
-        data.session;
-
-    if (!session) {
-
-        if (status) {
-
-            status.textContent =
-                "Please login first.";
-
-        }
+        status.textContent =
+            "Please login again.";
 
         showLogin();
 
         return null;
+
     }
+
+
+    status.textContent =
+        "⏳ Generating voice...";
+
 
     const selectedVoice =
         voiceSelect.value;
@@ -990,16 +712,10 @@ async function generateAudio() {
 
     const script =
         buildVoiceScript(
-            originalScript,
+            originalText,
             selectedVoice
         );
 
-    if (status) {
-
-        status.textContent =
-            "⏳ Generating voice...";
-
-    }
 
     try {
 
@@ -1014,47 +730,43 @@ async function generateAudio() {
                         "Content-Type":
                             "application/json",
 
-                        "Authorization":
-                            `Bearer ${session.access_token}`
+                        Authorization:
+                            `Bearer ${data.session.access_token}`
 
                     },
 
                     body: JSON.stringify({
 
-                        text:
-                            script,
+                        text: script,
 
-                        voice:
-                            voice
+                        voice: voice
 
                     })
 
                 }
             );
 
+
         if (response.status === 401) {
 
-            if (status) {
-
-                status.textContent =
-                    "Your login session expired. Please login again.";
-
-            }
+            status.textContent =
+                "Session expired. Please login again.";
 
             await supabaseClient.auth.signOut();
 
             return null;
+
         }
 
 
         if (response.status === 402) {
 
-            const data =
+            const result =
                 await response.json();
 
             freeUses =
                 Number(
-                    data.free_uses ||
+                    result.free_uses ||
                     FREE_GENERATIONS
                 );
 
@@ -1062,18 +774,16 @@ async function generateAudio() {
                 false;
 
             updateSubscriptionDisplay();
+
             updateLimitDisplay();
 
             showPricing();
 
-            if (status) {
-
-                status.textContent =
-                    "🔒 Your free generations are finished. Please subscribe.";
-
-            }
+            status.textContent =
+                "🔒 Your free generations are finished.";
 
             return null;
+
         }
 
 
@@ -1082,14 +792,9 @@ async function generateAudio() {
             const errorText =
                 await response.text();
 
-            console.error(
-                "TTS server error:",
-                errorText
-            );
-
             throw new Error(
                 errorText ||
-                `Server returned ${response.status}`
+                `Server error ${response.status}`
             );
 
         }
@@ -1098,10 +803,11 @@ async function generateAudio() {
         const blob =
             await response.blob();
 
+
         if (!blob.size) {
 
             throw new Error(
-                "Server returned empty audio."
+                "The server returned empty audio."
             );
 
         }
@@ -1121,6 +827,7 @@ async function generateAudio() {
                 blob
             );
 
+
         currentAudio =
             new Audio(
                 currentAudioURL
@@ -1130,12 +837,8 @@ async function generateAudio() {
         currentAudio.onended =
             () => {
 
-                if (status) {
-
-                    status.textContent =
-                        "Finished.";
-
-                }
+                status.textContent =
+                    "Finished.";
 
             };
 
@@ -1143,95 +846,26 @@ async function generateAudio() {
         currentAudio.onerror =
             () => {
 
-                if (status) {
-
-                    status.textContent =
-                        "❌ Audio could not be played.";
-
-                }
+                status.textContent =
+                    "❌ Audio playback failed.";
 
             };
 
 
-        if (!subscriptionActive) {
+        status.textContent =
+            "✅ Voice generated successfully.";
 
-            freeUses++;
-
-        }
-
-
-        updateSubscriptionDisplay();
-        updateLimitDisplay();
-
-
-        if (subscriptionActive) {
-
-            if (status) {
-
-                status.textContent =
-                    "✅ Voice generated.";
-
-            }
-
-        } else {
-
-            const remaining =
-                Math.max(
-                    0,
-                    FREE_GENERATIONS - freeUses
-                );
-
-            if (status) {
-
-                status.textContent =
-                    `✅ Voice generated. ${remaining} free generation${
-                        remaining === 1 ? "" : "s"
-                    } remaining.`;
-
-            }
-
-        }
-
-
-        if (
-            !subscriptionActive &&
-            freeUses >= FREE_GENERATIONS
-        ) {
-
-            setTimeout(
-                () => {
-
-                    showPricing();
-
-                },
-                1000
-            );
-
-        }
-
-
-        return {
-            blob: blob,
-            url: currentAudioURL
-        };
+        return true;
 
     } catch (error) {
 
         console.error(
-            "Voice generation error:",
+            "TTS error:",
             error
         );
 
-        if (status) {
-
-            status.textContent =
-                "❌ " +
-                (
-                    error.message ||
-                    "Voice generation failed."
-                );
-
-        }
+        status.textContent =
+            "❌ " + error.message;
 
         return null;
 
@@ -1240,267 +874,183 @@ async function generateAudio() {
 }
 
 
-// ======================================
+// ============================================
 // PLAY
-// ======================================
+// ============================================
 
-if (playButton) {
+playButton.addEventListener(
+    "click",
+    async () => {
 
-    playButton.addEventListener(
-        "click",
-        async () => {
+        if (!currentAudio) {
 
-            try {
+            const generated =
+                await generateAudio();
 
-                if (!currentAudio) {
-
-                    const result =
-                        await generateAudio();
-
-                    if (!result) {
-                        return;
-                    }
-
-                }
-
-                currentAudio.currentTime =
-                    0;
-
-                await currentAudio.play();
-
-                if (status) {
-
-                    status.textContent =
-                        "🎤 Speaking...";
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Play error:",
-                    error
-                );
-
-                if (status) {
-
-                    status.textContent =
-                        "❌ Unable to play voice.";
-
-                }
-
+            if (!generated) {
+                return;
             }
 
         }
-    );
 
-}
+        try {
+
+            currentAudio.currentTime = 0;
+
+            await currentAudio.play();
+
+            status.textContent =
+                "🎤 Speaking...";
+
+        } catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                "❌ Unable to play audio.";
+
+        }
+
+    }
+);
 
 
-// ======================================
+// ============================================
 // PAUSE
-// ======================================
+// ============================================
 
-if (pauseButton) {
+pauseButton.addEventListener(
+    "click",
+    () => {
 
-    pauseButton.addEventListener(
-        "click",
-        () => {
+        if (!currentAudio) {
 
-            if (!currentAudio) {
+            status.textContent =
+                "Nothing is playing.";
 
-                if (status) {
-
-                    status.textContent =
-                        "Nothing is playing.";
-
-                }
-
-                return;
-            }
-
-            currentAudio.pause();
-
-            if (status) {
-
-                status.textContent =
-                    "⏸ Paused.";
-
-            }
+            return;
 
         }
-    );
 
-}
+        currentAudio.pause();
+
+        status.textContent =
+            "⏸ Paused.";
+
+    }
+);
 
 
-// ======================================
+// ============================================
 // RESUME
-// ======================================
+// ============================================
 
-if (resumeButton) {
+resumeButton.addEventListener(
+    "click",
+    async () => {
 
-    resumeButton.addEventListener(
-        "click",
-        async () => {
+        if (!currentAudio) {
 
-            if (!currentAudio) {
+            status.textContent =
+                "Generate a voice first.";
 
-                if (status) {
-
-                    status.textContent =
-                        "Generate a voice first.";
-
-                }
-
-                return;
-            }
-
-            try {
-
-                await currentAudio.play();
-
-                if (status) {
-
-                    status.textContent =
-                        "🎤 Speaking...";
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Resume error:",
-                    error
-                );
-
-                if (status) {
-
-                    status.textContent =
-                        "❌ Unable to resume.";
-
-                }
-
-            }
+            return;
 
         }
-    );
 
-}
+        try {
+
+            await currentAudio.play();
+
+            status.textContent =
+                "🎤 Speaking...";
+
+        } catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                "❌ Unable to resume.";
+
+        }
+
+    }
+);
 
 
-// ======================================
+// ============================================
 // STOP
-// ======================================
+// ============================================
 
-if (stopButton) {
+stopButton.addEventListener(
+    "click",
+    () => {
 
-    stopButton.addEventListener(
-        "click",
-        () => {
+        if (!currentAudio) {
 
-            if (!currentAudio) {
+            status.textContent =
+                "Nothing is playing.";
 
-                if (status) {
+            return;
 
-                    status.textContent =
-                        "Nothing is playing.";
+        }
 
-                }
+        currentAudio.pause();
 
+        currentAudio.currentTime = 0;
+
+        status.textContent =
+            "⏹ Stopped.";
+
+    }
+);
+
+
+// ============================================
+// DOWNLOAD
+// ============================================
+
+downloadButton.addEventListener(
+    "click",
+    async () => {
+
+        if (!currentAudio) {
+
+            const generated =
+                await generateAudio();
+
+            if (!generated) {
                 return;
             }
 
-            currentAudio.pause();
-
-            currentAudio.currentTime =
-                0;
-
-            if (status) {
-
-                status.textContent =
-                    "⏹ Stopped.";
-
-            }
-
         }
-    );
-
-}
 
 
-// ======================================
-// DOWNLOAD
-// ======================================
+        const link =
+            document.createElement("a");
 
-if (downloadButton) {
+        link.href =
+            currentAudioURL;
 
-    downloadButton.addEventListener(
-        "click",
-        async () => {
+        link.download =
+            "voice-over.wav";
 
-            try {
+        document.body.appendChild(link);
 
-                if (!currentAudio) {
+        link.click();
 
-                    const result =
-                        await generateAudio();
+        link.remove();
 
-                    if (!result) {
-                        return;
-                    }
+        status.textContent =
+            "⬇️ Download started.";
 
-                }
-
-                const link =
-                    document.createElement("a");
-
-                link.href =
-                    currentAudioURL;
-
-                link.download =
-                    "voice-over.wav";
-
-                document.body.appendChild(
-                    link
-                );
-
-                link.click();
-
-                link.remove();
-
-                if (status) {
-
-                    status.textContent =
-                        "⬇️ Download started.";
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Download error:",
-                    error
-                );
-
-                if (status) {
-
-                    status.textContent =
-                        "❌ Download failed.";
-
-                }
-
-            }
-
-        }
-    );
-
-}
+    }
+);
 
 
-// ======================================
+// ============================================
 // PAYSTACK
-// ======================================
+// ============================================
 
 const PAYSTACK_PUBLIC_KEY =
     "pk_test_238b10087d6e116590057be181d1f6af5849d32e";
@@ -1520,9 +1070,126 @@ const PAYSTACK_PLANS = {
 };
 
 
-// ======================================
+// ============================================
+// START PAYMENT
+// ============================================
+
+async function startPayment(
+    planCode,
+    planName
+) {
+
+    if (
+        typeof PaystackPop ===
+        "undefined"
+    ) {
+
+        paymentStatus.textContent =
+            "❌ Paystack failed to load.";
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.getUser();
+
+
+    if (error || !data.user) {
+
+        paymentStatus.textContent =
+            "Please login first.";
+
+        return;
+
+    }
+
+
+    paymentStatus.textContent =
+        `Opening ${planName} payment...`;
+
+
+    try {
+
+        const popup =
+            new PaystackPop();
+
+
+        popup.newTransaction({
+
+            key:
+                PAYSTACK_PUBLIC_KEY,
+
+            email:
+                data.user.email,
+
+            planCode:
+                planCode,
+
+            onSuccess:
+                async (transaction) => {
+
+                    console.log(
+                        "Paystack transaction:",
+                        transaction
+                    );
+
+
+                    paymentStatus.textContent =
+                        "⏳ Payment received. Verifying...";
+
+
+                    await verifyPayment(
+                        transaction.reference,
+                        planName
+                    );
+
+                },
+
+
+            onCancel:
+                () => {
+
+                    paymentStatus.textContent =
+                        "Payment cancelled.";
+
+                },
+
+
+            onError:
+                (error) => {
+
+                    console.error(
+                        "Paystack error:",
+                        error
+                    );
+
+                    paymentStatus.textContent =
+                        "❌ Payment failed.";
+
+                }
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        paymentStatus.textContent =
+            "❌ " + error.message;
+
+    }
+
+}
+
+
+// ============================================
 // VERIFY PAYMENT
-// ======================================
+// ============================================
 
 async function verifyPayment(
     reference,
@@ -1537,20 +1204,15 @@ async function verifyPayment(
         } =
             await supabaseClient.auth.getSession();
 
-        if (error) {
-            throw error;
-        }
 
-        const session =
-            data.session;
-
-        if (!session) {
+        if (error || !data.session) {
 
             throw new Error(
                 "Please login again."
             );
 
         }
+
 
         const response =
             await fetch(
@@ -1564,8 +1226,8 @@ async function verifyPayment(
                         "Content-Type":
                             "application/json",
 
-                        "Authorization":
-                            `Bearer ${session.access_token}`
+                        Authorization:
+                            `Bearer ${data.session.access_token}`
 
                     },
 
@@ -1582,13 +1244,10 @@ async function verifyPayment(
                 }
             );
 
+
         const result =
             await response.json();
 
-        console.log(
-            "Payment verification:",
-            result
-        );
 
         if (!response.ok) {
 
@@ -1599,6 +1258,7 @@ async function verifyPayment(
 
         }
 
+
         subscriptionActive =
             result.active === true;
 
@@ -1607,8 +1267,11 @@ async function verifyPayment(
                 result.free_uses || 0
             );
 
+
         updateSubscriptionDisplay();
+
         updateLimitDisplay();
+
 
         if (subscriptionActive) {
 
@@ -1616,204 +1279,37 @@ async function verifyPayment(
 
         }
 
-        if (paymentStatus) {
 
-            paymentStatus.textContent =
-                "✅ Payment verified successfully.";
+        paymentStatus.textContent =
+            "✅ Payment verified successfully.";
 
-        }
-
-        return true;
 
     } catch (error) {
 
         console.error(
-            "Payment verification error:",
+            "Verification error:",
             error
         );
 
-        if (paymentStatus) {
-
-            paymentStatus.textContent =
-                "❌ " +
-                (
-                    error.message ||
-                    "Payment verification failed."
-                );
-
-        }
-
-        return false;
+        paymentStatus.textContent =
+            "❌ " + error.message;
 
     }
 
 }
 
 
-// ======================================
-// START PAYSTACK
-// ======================================
-
-async function startPaystackPayment(
-    planCode,
-    planName
-) {
-
-    try {
-
-        if (
-            typeof PaystackPop ===
-            "undefined"
-        ) {
-
-            throw new Error(
-                "Paystack did not load. Refresh the page."
-            );
-
-        }
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth.getUser();
-
-        if (error) {
-            throw error;
-        }
-
-        const user =
-            data.user;
-
-        if (!user) {
-
-            throw new Error(
-                "Please login first."
-            );
-
-        }
-
-        if (!user.email) {
-
-            throw new Error(
-                "Your account has no email."
-            );
-
-        }
-
-        if (paymentStatus) {
-
-            paymentStatus.textContent =
-                `Opening ${planName} payment...`;
-
-        }
-
-        const popup =
-            new PaystackPop();
-
-        popup.newTransaction({
-
-            key:
-                PAYSTACK_PUBLIC_KEY,
-
-            email:
-                user.email,
-
-            planCode:
-                planCode,
-
-            onSuccess:
-                async (transaction) => {
-
-                    console.log(
-                        "Paystack success:",
-                        transaction
-                    );
-
-                    if (paymentStatus) {
-
-                        paymentStatus.textContent =
-                            "⏳ Payment received. Verifying...";
-
-                    }
-
-                    await verifyPayment(
-                        transaction.reference,
-                        planName
-                    );
-
-                },
-
-            onCancel:
-                () => {
-
-                    if (paymentStatus) {
-
-                        paymentStatus.textContent =
-                            "Payment cancelled.";
-
-                    }
-
-                },
-
-            onError:
-                (error) => {
-
-                    console.error(
-                        "Paystack error:",
-                        error
-                    );
-
-                    if (paymentStatus) {
-
-                        paymentStatus.textContent =
-                            "❌ Payment failed.";
-
-                    }
-
-                }
-
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Paystack error:",
-            error
-        );
-
-        if (paymentStatus) {
-
-            paymentStatus.textContent =
-                "❌ " +
-                (
-                    error.message ||
-                    "Unable to open payment."
-                );
-
-        }
-
-    }
-
-}
-
-
-// ======================================
+// ============================================
 // PLAN BUTTONS
-// ======================================
+// ============================================
 
-const basicPlanButton =
-    document.getElementById(
-        "basicPlanButton"
-    );
-
-if (basicPlanButton) {
-
-    basicPlanButton.addEventListener(
+document
+    .getElementById("basicPlanButton")
+    .addEventListener(
         "click",
         () => {
 
-            startPaystackPayment(
+            startPayment(
                 PAYSTACK_PLANS.basic,
                 "basic"
             );
@@ -1821,21 +1317,14 @@ if (basicPlanButton) {
         }
     );
 
-}
 
-
-const standardPlanButton =
-    document.getElementById(
-        "standardPlanButton"
-    );
-
-if (standardPlanButton) {
-
-    standardPlanButton.addEventListener(
+document
+    .getElementById("standardPlanButton")
+    .addEventListener(
         "click",
         () => {
 
-            startPaystackPayment(
+            startPayment(
                 PAYSTACK_PLANS.standard,
                 "standard"
             );
@@ -1843,21 +1332,14 @@ if (standardPlanButton) {
         }
     );
 
-}
 
-
-const proPlanButton =
-    document.getElementById(
-        "proPlanButton"
-    );
-
-if (proPlanButton) {
-
-    proPlanButton.addEventListener(
+document
+    .getElementById("proPlanButton")
+    .addEventListener(
         "click",
         () => {
 
-            startPaystackPayment(
+            startPayment(
                 PAYSTACK_PLANS.pro,
                 "pro"
             );
@@ -1865,11 +1347,9 @@ if (proPlanButton) {
         }
     );
 
-}
 
-
-// ======================================
-// START APPLICATION
-// ======================================
+// ============================================
+// START
+// ============================================
 
 checkLogin();
