@@ -1,8 +1,7 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -12,13 +11,9 @@
 
     <title>Voice Over Studio</title>
 
-    <link
-        rel="stylesheet"
-        href="index.css"
-    >
+    <link rel="stylesheet" href="index.css">
 
     <style>
-
         /* ==============================
            LOGIN SCREEN
         ============================== */
@@ -105,9 +100,8 @@
             font-size: 14px;
         }
 
-
         /* ==============================
-           SMALL SUBSCRIPTION BAR
+           SUBSCRIPTION BAR
         ============================== */
 
         .subscription-bar {
@@ -115,18 +109,14 @@
             max-width: 900px;
             margin: 15px auto;
             padding: 12px 16px;
-
             background: white;
             border: 1px solid #e5e5e5;
             border-radius: 12px;
-
             display: flex;
             justify-content: space-between;
             align-items: center;
-
             gap: 15px;
             box-sizing: border-box;
-
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
@@ -150,23 +140,13 @@
             border: none;
             background: #111;
             color: white;
-
             padding: 9px 14px;
-
             border-radius: 8px;
-
             font-size: 13px;
             font-weight: 600;
-
             cursor: pointer;
-
             white-space: nowrap;
         }
-
-        .small-subscription-button:hover {
-            opacity: 0.9;
-        }
-
 
         /* ==============================
            VOICE SELECT
@@ -177,17 +157,12 @@
             padding: 14px;
             margin-top: 8px;
             margin-bottom: 20px;
-
             border: 1px solid #ddd;
             border-radius: 10px;
-
             background: white;
-
             font-size: 16px;
-
             box-sizing: border-box;
         }
-
 
         /* ==============================
            PRICING
@@ -196,17 +171,11 @@
         .pricing {
             width: 100%;
             max-width: 1100px;
-
             margin: 30px auto;
-
             padding: 25px;
-
             box-sizing: border-box;
-
             text-align: center;
-
             background: #f8f8f8;
-
             border-radius: 18px;
         }
 
@@ -222,24 +191,15 @@
 
         .pricing-container {
             display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
         }
 
         .price-card {
             background: white;
-
             border-radius: 18px;
-
             padding: 28px 20px;
-
-            box-shadow:
-                0 8px 25px
-                rgba(0, 0, 0, 0.08);
-
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
             box-sizing: border-box;
         }
 
@@ -248,76 +208,41 @@
             font-size: 22px;
         }
 
-
-        /* ==============================
-           PRICE
-        ============================== */
-
         .plan-price {
             display: flex;
-
             align-items: baseline;
-
             justify-content: center;
-
             gap: 5px;
-
             margin: 15px 0;
         }
 
         .plan-price .amount {
             font-size: 30px;
-
             font-weight: 700;
-
             color: #111;
         }
 
         .plan-price .period {
             font-size: 14px;
-
             color: #666;
-
-            font-weight: normal;
         }
 
         .price-card p {
             color: #666;
-
             line-height: 1.5;
-
             min-height: 65px;
         }
 
-
-        /* ==============================
-           PAY BUTTON
-        ============================== */
-
         .pay-button {
             width: 100%;
-
             padding: 14px;
-
             border: none;
-
             border-radius: 10px;
-
             background: #111;
-
             color: white;
-
             font-size: 15px;
-
             font-weight: 600;
-
             cursor: pointer;
-
-            transition: 0.2s;
-        }
-
-        .pay-button:hover {
-            opacity: 0.9;
         }
 
         .pay-button:active {
@@ -326,96 +251,58 @@
 
         .payment-status {
             min-height: 25px;
-
             margin-top: 20px;
-
             font-weight: 600;
         }
 
-
         /* ==============================
-           FREE LIMIT MESSAGE
+           FREE LIMIT
         ============================== */
 
         .limit-message {
             display: none;
-
             max-width: 600px;
-
             margin: 20px auto;
-
             padding: 18px;
-
             background: #fff3cd;
-
             border: 1px solid #ffe69c;
-
             border-radius: 12px;
-
             text-align: center;
-
             box-sizing: border-box;
         }
 
         .limit-message strong {
             display: block;
-
             margin-bottom: 6px;
         }
 
         .limit-message p {
             margin: 0 0 12px;
-
             color: #555;
-
             font-size: 14px;
         }
 
         .limit-subscribe-button {
             border: none;
-
             background: #111;
-
             color: white;
-
             padding: 11px 18px;
-
             border-radius: 8px;
-
             cursor: pointer;
-
             font-weight: 600;
         }
-
-
-        /* ==============================
-           LOCKED STUDIO
-        ============================== */
-
-        .studio-locked {
-            opacity: 0.6;
-
-            pointer-events: none;
-
-            position: relative;
-        }
-
 
         /* ==============================
            MOBILE
         ============================== */
 
         @media (max-width: 700px) {
-
             .pricing-container {
                 grid-template-columns: 1fr;
             }
-
         }
 
-
         @media (max-width: 480px) {
-
             #authScreen {
                 padding: 15px;
             }
@@ -434,53 +321,32 @@
 
             .subscription-bar {
                 width: calc(100% - 20px);
-
                 padding: 11px 12px;
-            }
-
-            .subscription-info strong {
-                font-size: 13px;
-            }
-
-            #freeUsageText {
-                font-size: 11px;
             }
 
             .small-subscription-button {
                 padding: 8px 11px;
-
                 font-size: 12px;
             }
-
         }
-
     </style>
-
 </head>
-
 
 <body>
 
-
-    <!-- ==============================
-         LOGIN / SIGN UP
-    ============================== -->
+    <!-- LOGIN -->
 
     <div id="authScreen">
 
         <div class="auth-card">
 
-            <h1>
-                🎙️ Voice Over Studio
-            </h1>
+            <h1>🎙️ Voice Over Studio</h1>
 
             <p class="auth-subtitle">
                 Create an account to start creating voice-overs.
             </p>
 
-            <h2>
-                Welcome
-            </h2>
+            <h2>Welcome</h2>
 
             <input
                 class="auth-input"
@@ -519,37 +385,24 @@
     </div>
 
 
-    <!-- ==============================
-         MAIN APP
-    ============================== -->
+    <!-- MAIN APP -->
 
     <div
         class="app"
         id="app"
-        style="display: none;"
+        style="display:none;"
     >
-
-
-        <!-- ==============================
-             HEADER
-        ============================== -->
 
         <header>
 
-            <h1>
-                🎙️ Voice Over Studio
-            </h1>
+            <h1>🎙️ Voice Over Studio</h1>
 
-            <p>
-                Turn your text into speech
-            </p>
+            <p>Turn your text into speech</p>
 
         </header>
 
 
-        <!-- ==============================
-             SMALL SUBSCRIPTION BAR
-        ============================== -->
+        <!-- VIEW PLANS BUTTON -->
 
         <div class="subscription-bar">
 
@@ -575,9 +428,7 @@
         </div>
 
 
-        <!-- ==============================
-             FREE LIMIT MESSAGE
-        ============================== -->
+        <!-- FREE LIMIT -->
 
         <div
             id="limitMessage"
@@ -603,9 +454,7 @@
         </div>
 
 
-        <!-- ==============================
-             VOICE OVER STUDIO
-        ============================== -->
+        <!-- VOICE STUDIO -->
 
         <main
             class="card"
@@ -618,69 +467,23 @@
 
             <textarea
                 id="text"
-                placeholder="Write your script here...
-
-Example:
-
-Hello Matthew, welcome to today's video.
-
-Today we're going to explain how this amazing technology works.
-
-Let's get started."
+                placeholder="Write your script here..."
             ></textarea>
 
-
             <div class="counter">
-
-                <span id="count">
-                    0
-                </span>
-
+                <span id="count">0</span>
                 characters
-
             </div>
 
-
-            <!-- ==============================
-                 VOICE SELECTION
-            ============================== -->
 
             <label for="voice">
                 🎙️ Select voice
             </label>
 
-            <select id="voice">
-
-                <option value="nigeriaMale">
-                    🇳🇬 Nigerian Male
-                </option>
-
-                <option value="nigeriaFemale">
-                    🇳🇬 Nigerian Female
-                </option>
-
-                <option value="ukFemale">
-                    🇬🇧 UK Female
-                </option>
-
-                <option value="ukMale">
-                    🇬🇧 UK Male
-                </option>
-
-                <option value="usFemale">
-                    🇺🇸 American Female
-                </option>
-
-                <option value="usMale">
-                    🇺🇸 American Male
-                </option>
-
-            </select>
+            <select id="voice"></select>
 
 
-            <!-- ==============================
-                 CONTROLS
-            ============================== -->
+            <!-- CONTROLS -->
 
             <div class="controls">
 
@@ -699,9 +502,7 @@ Let's get started."
                         step="0.1"
                     >
 
-                    <span id="rateValue">
-                        1.0
-                    </span>
+                    <span id="rateValue">1.0</span>
 
                 </div>
 
@@ -721,18 +522,14 @@ Let's get started."
                         step="0.1"
                     >
 
-                    <span id="pitchValue">
-                        1.0
-                    </span>
+                    <span id="pitchValue">1.0</span>
 
                 </div>
 
             </div>
 
 
-            <!-- ==============================
-                 AUDIO BUTTONS
-            ============================== -->
+            <!-- AUDIO BUTTONS -->
 
             <div class="buttons">
 
@@ -755,10 +552,6 @@ Let's get started."
             </div>
 
 
-            <!-- ==============================
-                 DOWNLOAD
-            ============================== -->
-
             <div class="download-area">
 
                 <button
@@ -775,10 +568,6 @@ Let's get started."
             </div>
 
 
-            <!-- ==============================
-                 STATUS
-            ============================== -->
-
             <div
                 id="status"
                 class="status"
@@ -786,13 +575,10 @@ Let's get started."
                 Ready.
             </div>
 
-
         </main>
 
 
-        <!-- ==============================
-             TIPS
-        ============================== -->
+        <!-- TIPS -->
 
         <section class="tips">
 
@@ -808,28 +594,15 @@ Let's get started."
                 Use full stops between ideas.
             </p>
 
-            <p>
-                Example:
-
-                <strong>
-                    "Matthew, welcome to the channel."
-                </strong>
-
-            </p>
-
         </section>
 
 
-        <!-- ==============================
-             SUBSCRIPTION PLANS
-             HIDDEN UNTIL USER CLICKS
-             VIEW PLANS
-        ============================== -->
+        <!-- PRICING -->
 
         <section
             class="pricing"
             id="pricing"
-            style="display: none;"
+            style="display:none;"
         >
 
             <h2>
@@ -844,20 +617,16 @@ Let's get started."
             <div class="pricing-container">
 
 
-                <!-- ==============================
-                     BASIC
-                ============================== -->
+                <!-- BASIC ₦2,000 -->
 
                 <div class="price-card">
 
-                    <h3>
-                        Basic
-                    </h3>
+                    <h3>Basic</h3>
 
                     <div class="plan-price">
 
                         <span class="amount">
-                            ₦1,000
+                            ₦2,000
                         </span>
 
                         <span class="period">
@@ -881,15 +650,11 @@ Let's get started."
                 </div>
 
 
-                <!-- ==============================
-                     STANDARD
-                ============================== -->
+                <!-- STANDARD ₦3,000 -->
 
                 <div class="price-card">
 
-                    <h3>
-                        Standard
-                    </h3>
+                    <h3>Standard</h3>
 
                     <div class="plan-price">
 
@@ -918,15 +683,11 @@ Let's get started."
                 </div>
 
 
-                <!-- ==============================
-                     PRO
-                ============================== -->
+                <!-- PRO ₦5,000 -->
 
                 <div class="price-card">
 
-                    <h3>
-                        Pro
-                    </h3>
+                    <h3>Pro</h3>
 
                     <div class="plan-price">
 
@@ -955,7 +716,6 @@ Let's get started."
 
                 </div>
 
-
             </div>
 
 
@@ -966,30 +726,22 @@ Let's get started."
 
         </section>
 
-
     </div>
 
 
-    <!-- ==============================
-         SUPABASE
-    ============================== -->
+    <!-- SUPABASE -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
-    <!-- ==============================
-         PAYSTACK
-    ============================== -->
+    <!-- PAYSTACK -->
 
     <script src="https://js.paystack.co/v2/inline.js"></script>
 
 
-    <!-- ==============================
-         YOUR JAVASCRIPT
-    ============================== -->
+    <!-- JAVASCRIPT -->
 
     <script src="index.js"></script>
-
 
 </body>
 
