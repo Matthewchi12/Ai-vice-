@@ -1,95 +1,52 @@
- import express from "express";
+import express from "express";
 import cors from "cors";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 
 const app = express();
 
-
 // ======================================
 // ENVIRONMENT VARIABLES
 // ======================================
 
-const PORT = process.env.PORT || 10000;
-
-const GEMINI_API_KEY =
-    process.env.GEMINI_API_KEY;
-
-const SUPABASE_URL =
-    process.env.SUPABASE_URL;
-
-const SUPABASE_SECRET_KEY =
-    process.env.SUPABASE_SECRET_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const PAYSTACK_SECRET_KEY =
-    process.env.PAYSTACK_SECRET_KEY;
-
+const {
+    PORT = 10000,
+    GEMINI_API_KEY,
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
+    PAYSTACK_SECRET_KEY
+} = process.env;
 
 // ======================================
 // CHECK ENVIRONMENT VARIABLES
 // ======================================
 
-const missing = [];
+const missingVariables = [];
 
 if (!GEMINI_API_KEY) {
-    missing.push("GEMINI_API_KEY");
+    missingVariables.push("GEMINI_API_KEY");
 }
 
 if (!SUPABASE_URL) {
-    missing.push("SUPABASE_URL");
+    missingVariables.push("SUPABASE_URL");
 }
 
-if (!SUPABASE_SECRET_KEY) {
-    missing.push(
-        "SUPABASE_SECRET_KEY"
-    );
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+    missingVariables.push("SUPABASE_SERVICE_ROLE_KEY");
 }
 
 if (!PAYSTACK_SECRET_KEY) {
-    missing.push(
-        "PAYSTACK_SECRET_KEY"
-    );
+    missingVariables.push("PAYSTACK_SECRET_KEY");
 }
 
-if (missing.length > 0) {
-
+if (missingVariables.length > 0) {
     console.error(
-        "Missing environment variables:"
-    );
-
-    console.error(
-        missing.join(", ")
+        "Missing environment variables:",
+        missingVariables.join(", ")
     );
 
     process.exit(1);
 }
-
-
-// ======================================
-// CHECK SUPABASE KEY
-// ======================================
-
-if (
-    SUPABASE_SECRET_KEY.startsWith(
-        "sb_publishable_"
-    ) ||
-    SUPABASE_SECRET_KEY.startsWith(
-        "sb_anon_"
-    )
-) {
-
-    console.error(
-        "ERROR: You placed a publishable/anon key in the backend."
-    );
-
-    console.error(
-        "Use the Supabase SECRET key (sb_secret_...) or legacy service_role key."
-    );
-
-    process.exit(1);
-}
-
 
 // ======================================
 // MIDDLEWARE
@@ -97,16 +54,7 @@ if (
 
 app.use(
     cors({
-        origin: "*",
-        methods: [
-            "GET",
-            "POST",
-            "OPTIONS"
-        ],
-        allowedHeaders: [
-            "Content-Type",
-            "Authorization"
-        ]
+        origin: "*"
     })
 );
 
@@ -116,47 +64,29 @@ app.use(
     })
 );
 
-
 // ======================================
 // GEMINI
 // ======================================
 
-const ai =
-    new GoogleGenAI({
-        apiKey:
-            GEMINI_API_KEY
-    });
-
+const ai = new GoogleGenAI({
+    apiKey: GEMINI_API_KEY
+});
 
 // ======================================
-// SUPABASE ADMIN CLIENT
+// SUPABASE
 // ======================================
 
-const supabaseAdmin =
-    createClient(
-        SUPABASE_URL,
-        SUPABASE_SECRET_KEY,
-        {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false,
-                detectSessionInUrl: false
-            }
-        }
-    );
-
+const supabaseAdmin = createClient(
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY
+);
 
 // ======================================
 // CREATE WAV FILE
 // ======================================
 
-function createWav(
-    pcmData,
-    sampleRate = 24000
-) {
-
+function createWav(pcmData, sampleRate = 24000) {
     const numChannels = 1;
-
     const bitsPerSample = 16;
 
     const byteRate =
@@ -170,30 +100,20 @@ function createWav(
         bitsPerSample /
         8;
 
-    const buffer =
-        Buffer.alloc(
-            44 + pcmData.length
-        );
-
-    buffer.write(
-        "RIFF",
-        0
+    const buffer = Buffer.alloc(
+        44 + pcmData.length
     );
+
+    buffer.write("RIFF", 0);
 
     buffer.writeUInt32LE(
         36 + pcmData.length,
         4
     );
 
-    buffer.write(
-        "WAVE",
-        8
-    );
+    buffer.write("WAVE", 8);
 
-    buffer.write(
-        "fmt ",
-        12
-    );
+    buffer.write("fmt ", 12);
 
     buffer.writeUInt32LE(
         16,
@@ -230,10 +150,7 @@ function createWav(
         34
     );
 
-    buffer.write(
-        "data",
-        36
-    );
+    buffer.write("data", 36);
 
     buffer.writeUInt32LE(
         pcmData.length,
@@ -248,51 +165,39 @@ function createWav(
     return buffer;
 }
 
-
 // ======================================
-// AUTHENTICATED USER
+// GET AUTHENTICATED USER
 // ======================================
 
-async function getAuthenticatedUser(
-    req
-) {
-
+async function getAuthenticatedUser(req) {
     const authorization =
         req.headers.authorization;
 
     if (
         !authorization ||
-        !authorization.startsWith(
-            "Bearer "
-        )
+        !authorization.startsWith("Bearer ")
     ) {
-
         return null;
     }
 
     const token =
-        authorization
-            .slice(7)
-            .trim();
+        authorization.substring(7).trim();
 
     if (!token) {
         return null;
     }
 
     try {
-
         const {
             data,
             error
-        } =
-            await supabaseAdmin.auth.getUser(
-                token
-            );
+        } = await supabaseAdmin.auth.getUser(
+            token
+        );
 
         if (error) {
-
             console.error(
-                "Auth error:",
+                "Supabase authentication error:",
                 error.message
             );
 
@@ -300,9 +205,7 @@ async function getAuthenticatedUser(
         }
 
         return data?.user || null;
-
     } catch (error) {
-
         console.error(
             "Authentication error:",
             error
@@ -312,110 +215,70 @@ async function getAuthenticatedUser(
     }
 }
 
-
 // ======================================
 // GET OR CREATE SUBSCRIPTION
 // ======================================
 
-async function getUserSubscription(
-    userId
-) {
-
+async function getUserSubscription(userId) {
     const {
         data,
         error
-    } =
-        await supabaseAdmin
-            .from(
-                "user_subscriptions"
-            )
-            .select("*")
-            .eq(
-                "user_id",
-                userId
-            )
-            .maybeSingle();
+    } = await supabaseAdmin
+        .from("user_subscriptions")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
 
     if (error) {
-
         throw error;
     }
 
     if (data) {
-
         return data;
     }
 
-
     const {
-        data: created,
-        error: insertError
-    } =
-        await supabaseAdmin
-            .from(
-                "user_subscriptions"
-            )
-            .insert({
-                user_id:
-                    userId,
+        data: newAccount,
+        error: createError
+    } = await supabaseAdmin
+        .from("user_subscriptions")
+        .insert({
+            user_id: userId,
+            status: "inactive",
+            free_uses: 0
+        })
+        .select()
+        .single();
 
-                status:
-                    "inactive",
-
-                free_uses:
-                    0
-            })
-            .select()
-            .single();
-
-    if (insertError) {
-
-        throw insertError;
+    if (createError) {
+        throw createError;
     }
 
-    return created;
+    return newAccount;
 }
-
 
 // ======================================
 // HEALTH CHECK
 // ======================================
 
-app.get(
-    "/",
-    (req, res) => {
-
-        res.json({
-            status:
-                "online",
-
-            message:
-                "Voice Over Studio backend is working"
-        });
-
-    }
-);
-
+app.get("/", (req, res) => {
+    res.json({
+        status: "online",
+        message: "Voice Over Studio backend is working"
+    });
+});
 
 // ======================================
-// TTS GET TEST
+// TTS TEST
 // ======================================
 
-app.get(
-    "/tts",
-    (req, res) => {
-
-        res.json({
-            status:
-                "online",
-
-            message:
-                "TTS endpoint is online. Send POST request to /tts."
-        });
-
-    }
-);
-
+app.get("/tts", (req, res) => {
+    res.json({
+        status: "online",
+        message:
+            "TTS endpoint is online. Send a POST request to /tts."
+    });
+});
 
 // ======================================
 // SUBSCRIPTION
@@ -424,22 +287,15 @@ app.get(
 app.get(
     "/subscription",
     async (req, res) => {
-
         try {
-
             const user =
-                await getAuthenticatedUser(
-                    req
-                );
+                await getAuthenticatedUser(req);
 
             if (!user) {
-
-                return res
-                    .status(401)
-                    .json({
-                        error:
-                            "You must be logged in."
-                    });
+                return res.status(401).json({
+                    error:
+                        "You must be logged in."
+                });
             }
 
             const subscription =
@@ -448,7 +304,6 @@ app.get(
                 );
 
             return res.json({
-
                 active:
                     subscription.status ===
                     "active",
@@ -459,91 +314,61 @@ app.get(
                     ),
 
                 plan:
-                    subscription.plan ||
-                    null,
+                    subscription.plan || null,
 
                 status:
                     subscription.status ||
                     "inactive"
-
             });
-
         } catch (error) {
-
             console.error(
                 "Subscription error:",
                 error
             );
 
-            return res
-                .status(500)
-                .json({
-
-                    error:
-                        error?.message ||
-                        "Unable to check subscription."
-
-                });
+            return res.status(500).json({
+                error:
+                    "Unable to check subscription."
+            });
         }
     }
 );
 
-
 // ======================================
-// VERIFY PAYSTACK
+// VERIFY PAYSTACK PAYMENT
 // ======================================
 
 app.post(
     "/verify-payment",
     async (req, res) => {
-
         try {
-
             const user =
-                await getAuthenticatedUser(
-                    req
-                );
+                await getAuthenticatedUser(req);
 
             if (!user) {
-
-                return res
-                    .status(401)
-                    .json({
-                        error:
-                            "You must be logged in."
-                    });
+                return res.status(401).json({
+                    error:
+                        "You must be logged in."
+                });
             }
-
 
             const {
                 reference,
                 plan
             } = req.body;
 
-
             if (!reference) {
-
-                return res
-                    .status(400)
-                    .json({
-                        error:
-                            "Payment reference is required."
-                    });
+                return res.status(400).json({
+                    error:
+                        "Payment reference is required."
+                });
             }
-
-
-            console.log(
-                "Checking Paystack:",
-                reference
-            );
-
 
             const response =
                 await fetch(
                     `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
                     {
-                        method:
-                            "GET",
+                        method: "GET",
 
                         headers: {
                             Authorization:
@@ -555,229 +380,99 @@ app.post(
                     }
                 );
 
-
             const result =
                 await response.json();
-
 
             if (
                 !response.ok ||
                 !result.status ||
-                result.data?.status !==
-                    "success"
+                result.data?.status !== "success"
             ) {
-
-                return res
-                    .status(400)
-                    .json({
-                        error:
-                            "Payment could not be verified."
-                    });
+                return res.status(400).json({
+                    error:
+                        "Payment could not be verified."
+                });
             }
 
-
-            // ==================================
-            // CHECK EMAIL
-            // ==================================
-
             const paidEmail =
-                result.data
-                    ?.customer
-                    ?.email;
-
+                result.data?.customer?.email;
 
             if (
                 paidEmail &&
                 user.email &&
                 paidEmail.toLowerCase() !==
-                    user.email.toLowerCase()
+                user.email.toLowerCase()
             ) {
-
-                return res
-                    .status(403)
-                    .json({
-                        error:
-                            "Payment email does not match your account."
-                    });
+                return res.status(403).json({
+                    error:
+                        "Payment email does not match your account."
+                });
             }
-
-
-            // ==================================
-            // GET CURRENT ACCOUNT
-            // ==================================
 
             const {
-                data: existing,
-                error: existingError
-            } =
-                await supabaseAdmin
-                    .from(
-                        "user_subscriptions"
-                    )
-                    .select("*")
-                    .eq(
-                        "user_id",
-                        user.id
-                    )
-                    .maybeSingle();
+                error: saveError
+            } = await supabaseAdmin
+                .from("user_subscriptions")
+                .upsert(
+                    {
+                        user_id:
+                            user.id,
 
+                        plan:
+                            plan || "standard",
 
-            if (existingError) {
+                        status:
+                            "active",
 
-                throw existingError;
+                        paystack_customer_code:
+                            result.data?.customer
+                                ?.customer_code ||
+                            null,
+
+                        paid_at:
+                            new Date().toISOString(),
+
+                        updated_at:
+                            new Date().toISOString()
+                    },
+                    {
+                        onConflict:
+                            "user_id"
+                    }
+                );
+
+            if (saveError) {
+                console.error(
+                    "Subscription save error:",
+                    saveError
+                );
+
+                return res.status(500).json({
+                    error:
+                        "Payment succeeded but subscription could not be saved."
+                });
             }
-
-
-            // ==================================
-            // SAVE PAYMENT
-            // ==================================
-
-            let saved;
-
-
-            if (existing) {
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseAdmin
-                        .from(
-                            "user_subscriptions"
-                        )
-                        .update({
-
-                            plan:
-                                plan ||
-                                "standard",
-
-                            status:
-                                "active",
-
-                            paystack_customer_code:
-                                result.data
-                                    ?.customer
-                                    ?.customer_code ||
-                                null,
-
-                            paid_at:
-                                new Date()
-                                    .toISOString(),
-
-                            updated_at:
-                                new Date()
-                                    .toISOString()
-
-                        })
-                        .eq(
-                            "user_id",
-                            user.id
-                        )
-                        .select()
-                        .single();
-
-
-                if (error) {
-
-                    throw error;
-                }
-
-                saved =
-                    data;
-
-            } else {
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseAdmin
-                        .from(
-                            "user_subscriptions"
-                        )
-                        .insert({
-
-                            user_id:
-                                user.id,
-
-                            plan:
-                                plan ||
-                                "standard",
-
-                            status:
-                                "active",
-
-                            free_uses:
-                                0,
-
-                            paystack_customer_code:
-                                result.data
-                                    ?.customer
-                                    ?.customer_code ||
-                                null,
-
-                            paid_at:
-                                new Date()
-                                    .toISOString(),
-
-                            updated_at:
-                                new Date()
-                                    .toISOString()
-
-                        })
-                        .select()
-                        .single();
-
-
-                if (error) {
-
-                    throw error;
-                }
-
-                saved =
-                    data;
-            }
-
 
             return res.json({
-
-                success:
-                    true,
-
-                active:
-                    true,
-
+                success: true,
+                active: true,
                 plan:
-                    saved.plan,
-
-                free_uses:
-                    Number(
-                        saved.free_uses || 0
-                    )
-
+                    plan || "standard"
             });
-
-
         } catch (error) {
-
             console.error(
                 "Payment verification error:",
                 error
             );
 
-            return res
-                .status(500)
-                .json({
-
-                    error:
-                        error?.message ||
-                        "Payment verification failed."
-
-                });
+            return res.status(500).json({
+                error:
+                    error?.message ||
+                    "Payment verification failed."
+            });
         }
     }
 );
-
 
 // ======================================
 // TEXT TO SPEECH
@@ -786,108 +481,82 @@ app.post(
 app.post(
     "/tts",
     async (req, res) => {
-
         try {
-
-            // ==================================
-            // LOGIN CHECK
-            // ==================================
+            // ----------------------------------
+            // AUTHENTICATION
+            // ----------------------------------
 
             const user =
-                await getAuthenticatedUser(
-                    req
-                );
+                await getAuthenticatedUser(req);
 
             if (!user) {
-
-                return res
-                    .status(401)
-                    .json({
-                        error:
-                            "Please login first."
-                    });
+                return res.status(401).json({
+                    error:
+                        "Please login first."
+                });
             }
 
-
-            // ==================================
-            // ACCOUNT
-            // ==================================
+            // ----------------------------------
+            // GET ACCOUNT
+            // ----------------------------------
 
             const account =
                 await getUserSubscription(
                     user.id
                 );
 
-
-            const subscribed =
-                account.status ===
-                "active";
-
+            const isSubscribed =
+                account.status === "active";
 
             const freeUses =
                 Number(
                     account.free_uses || 0
                 );
 
-
-            // ==================================
+            // ----------------------------------
             // FREE LIMIT
-            // ==================================
+            // ----------------------------------
 
             if (
-                !subscribed &&
+                !isSubscribed &&
                 freeUses >= 5
             ) {
+                return res.status(402).json({
+                    error:
+                        "Your 5 free voice generations have been used. Please subscribe to continue.",
 
-                return res
-                    .status(402)
-                    .json({
+                    subscriptionRequired:
+                        true,
 
-                        error:
-                            "Your 5 free voice generations have been used. Please subscribe to continue.",
-
-                        subscriptionRequired:
-                            true,
-
-                        free_uses:
-                            freeUses
-
-                    });
+                    free_uses:
+                        freeUses
+                });
             }
 
-
-            // ==================================
-            // REQUEST
-            // ==================================
+            // ----------------------------------
+            // REQUEST DATA
+            // ----------------------------------
 
             const {
                 text,
                 voice
             } = req.body;
 
-
             if (
-                typeof text !==
-                    "string" ||
+                typeof text !== "string" ||
                 !text.trim()
             ) {
-
-                return res
-                    .status(400)
-                    .json({
-                        error:
-                            "Text is required."
-                    });
+                return res.status(400).json({
+                    error:
+                        "Text is required."
+                });
             }
 
-
             const selectedVoice =
-                voice ||
-                "Kore";
-
+                voice || "Kore";
 
             console.log(
-                "Generating:",
+                "Generating voice for:",
                 user.email
             );
 
@@ -896,14 +565,12 @@ app.post(
                 selectedVoice
             );
 
-
-            // ==================================
+            // ----------------------------------
             // GEMINI TTS
-            // ==================================
+            // ----------------------------------
 
             const response =
                 await ai.models.generateContent({
-
                     model:
                         "gemini-2.5-flash-preview-tts",
 
@@ -919,34 +586,24 @@ app.post(
                     ],
 
                     config: {
-
                         responseModalities: [
                             "AUDIO"
                         ],
 
                         speechConfig: {
-
                             voiceConfig: {
-
                                 prebuiltVoiceConfig: {
-
                                     voiceName:
                                         selectedVoice
-
                                 }
-
                             }
-
                         }
-
                     }
-
                 });
 
-
-            // ==================================
-            // AUDIO
-            // ==================================
+            // ----------------------------------
+            // FIND AUDIO
+            // ----------------------------------
 
             const audioPart =
                 response
@@ -954,93 +611,76 @@ app.post(
                     ?.content?.parts
                     ?.find(
                         part =>
-                            part.inlineData
-                                ?.data
+                            part.inlineData?.data
                     );
 
-
             if (!audioPart) {
+                console.error(
+                    "Gemini did not return audio."
+                );
 
-                return res
-                    .status(500)
-                    .json({
-                        error:
-                            "Gemini did not return audio."
-                    });
+                return res.status(500).json({
+                    error:
+                        "Gemini did not return audio."
+                });
             }
 
+            // ----------------------------------
+            // BASE64 → PCM
+            // ----------------------------------
 
             const pcm =
                 Buffer.from(
-                    audioPart
-                        .inlineData
-                        .data,
+                    audioPart.inlineData.data,
                     "base64"
                 );
 
-
             if (!pcm.length) {
-
-                return res
-                    .status(500)
-                    .json({
-                        error:
-                            "Gemini returned empty audio."
-                    });
+                return res.status(500).json({
+                    error:
+                        "Gemini returned empty audio."
+                });
             }
 
-
-            // ==================================
+            // ----------------------------------
             // COUNT FREE USE
-            // ==================================
+            // ----------------------------------
 
-            if (!subscribed) {
-
-                const newUses =
+            if (!isSubscribed) {
+                const newFreeUses =
                     freeUses + 1;
 
-
                 const {
-                    error
-                } =
-                    await supabaseAdmin
-                        .from(
-                            "user_subscriptions"
-                        )
-                        .update({
+                    error: updateError
+                } = await supabaseAdmin
+                    .from("user_subscriptions")
+                    .update({
+                        free_uses:
+                            newFreeUses,
 
-                            free_uses:
-                                newUses,
-
-                            updated_at:
-                                new Date()
-                                    .toISOString()
-
-                        })
-                        .eq(
-                            "user_id",
-                            user.id
-                        );
-
-
-                if (error) {
-
-                    console.error(
-                        "Free-use update error:",
-                        error
+                        updated_at:
+                            new Date().toISOString()
+                    })
+                    .eq(
+                        "user_id",
+                        user.id
                     );
 
+                if (updateError) {
+                    console.error(
+                        "Free-use update error:",
+                        updateError
+                    );
                 }
 
                 console.log(
-                    `Free uses: ${newUses}/5`
+                    `Free uses: ${newFreeUses}/5`
                 );
             }
 
-
-            // ==================================
-            // WAV
-            // ==================================
+            // ----------------------------------
+            // PCM → WAV
+            // ----------------------------------
 
             const wav =
                 createWav(
@@ -1048,6 +688,9 @@ app.post(
                     24000
                 );
 
+            // ----------------------------------
+            // SEND AUDIO
+            // ----------------------------------
 
             res.status(200);
 
@@ -1066,57 +709,42 @@ app.post(
                 'inline; filename="voice-over.wav"'
             );
 
-
-            return res.send(
-                wav
-            );
-
+            return res.send(wav);
 
         } catch (error) {
-
             console.error(
-                "TTS ERROR:"
+                "=============================="
             );
 
             console.error(
-                error
+                "TTS ERROR"
             );
 
-            return res
-                .status(500)
-                .json({
+            console.error(error);
 
-                    error:
-                        error?.message ||
-                        "Voice generation failed."
+            console.error(
+                "=============================="
+            );
 
-                });
+            return res.status(500).json({
+                error:
+                    error?.message ||
+                    "Voice generation failed."
+            });
         }
     }
 );
 
-
 // ======================================
-// 404
+// 404 HANDLER
 // ======================================
 
-app.use(
-    (req, res) => {
-
-        res
-            .status(404)
-            .json({
-
-                error:
-                    "Route not found",
-
-                path:
-                    req.path
-
-            });
-    }
-);
-
+app.use((req, res) => {
+    res.status(404).json({
+        error: "Route not found",
+        path: req.path
+    });
+});
 
 // ======================================
 // START SERVER
@@ -1126,31 +754,13 @@ app.listen(
     PORT,
     "0.0.0.0",
     () => {
-
         console.log(
             `Voice Over Studio backend running on port ${PORT}`
         );
 
         console.log(
             "Supabase URL configured:",
-            Boolean(
-                SUPABASE_URL
-            )
+            Boolean(SUPABASE_URL)
         );
-
-        console.log(
-            "Supabase secret/service key configured:",
-            Boolean(
-                SUPABASE_SECRET_KEY
-            )
-        );
-
-        console.log(
-            "Paystack configured:",
-            Boolean(
-                PAYSTACK_SECRET_KEY
-            )
-        );
-
     }
 );
