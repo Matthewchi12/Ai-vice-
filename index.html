@@ -1,1173 +1,728 @@
-import express from "express";
-import cors from "cors";
-import { GoogleGenAI } from "@google/genai";
-import { createClient } from "@supabase/supabase-js";
+<!DOCTYPE html>
+<html lang="en">
 
-const app = express();
+<head>
+    <meta charset="UTF-8">
 
-const PORT = process.env.PORT || 10000;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY =
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
-const PAYSTACK_SECRET_KEY =
-    process.env.PAYSTACK_SECRET_KEY;
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
+    <title>Voice Over Studio</title>
 
-// ======================================================
-// CHECK ENVIRONMENT VARIABLES
-// ======================================================
+    <link rel="stylesheet" href="index.css">
 
-const missing = [];
+    <style>
+        /* ==============================
+           LOGIN SCREEN
+        ============================== */
 
-if (!GEMINI_API_KEY) {
-    missing.push("GEMINI_API_KEY");
-}
-
-if (!SUPABASE_URL) {
-    missing.push("SUPABASE_URL");
-}
-
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-    missing.push("SUPABASE_SERVICE_ROLE_KEY");
-}
-
-if (!PAYSTACK_SECRET_KEY) {
-    missing.push("PAYSTACK_SECRET_KEY");
-}
-
-if (missing.length > 0) {
-    console.error(
-        "Missing environment variables:",
-        missing.join(", ")
-    );
-
-    process.exit(1);
-}
-
-
-// ======================================================
-// CHECK SUPABASE KEY
-// ======================================================
-
-if (
-    SUPABASE_SERVICE_ROLE_KEY.startsWith("sb_publishable_") ||
-    SUPABASE_SERVICE_ROLE_KEY.startsWith("sb_anon_")
-) {
-    console.error(
-        "ERROR: SUPABASE_SERVICE_ROLE_KEY is not a secret/service-role key."
-    );
-
-    console.error(
-        "Go to Supabase and copy the SECRET key/service_role key."
-    );
-
-    process.exit(1);
-}
-
-
-// ======================================================
-// MIDDLEWARE
-// ======================================================
-
-app.use(
-    cors({
-        origin: "*",
-        methods: ["GET", "POST", "OPTIONS"],
-        allowedHeaders: [
-            "Content-Type",
-            "Authorization"
-        ]
-    })
-);
-
-app.use(
-    express.json({
-        limit: "2mb"
-    })
-);
-
-
-// ======================================================
-// GEMINI
-// ======================================================
-
-const ai = new GoogleGenAI({
-    apiKey: GEMINI_API_KEY
-});
-
-
-// ======================================================
-// SUPABASE ADMIN CLIENT
-// ======================================================
-
-const supabaseAdmin = createClient(
-    SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
-
-
-// ======================================================
-// CREATE WAV
-// ======================================================
-
-function createWav(
-    pcmData,
-    sampleRate = 24000
-) {
-    const numChannels = 1;
-    const bitsPerSample = 16;
-
-    const byteRate =
-        sampleRate *
-        numChannels *
-        bitsPerSample /
-        8;
-
-    const blockAlign =
-        numChannels *
-        bitsPerSample /
-        8;
-
-    const buffer = Buffer.alloc(
-        44 + pcmData.length
-    );
-
-    buffer.write("RIFF", 0);
-
-    buffer.writeUInt32LE(
-        36 + pcmData.length,
-        4
-    );
-
-    buffer.write("WAVE", 8);
-
-    buffer.write("fmt ", 12);
-
-    buffer.writeUInt32LE(
-        16,
-        16
-    );
-
-    buffer.writeUInt16LE(
-        1,
-        20
-    );
-
-    buffer.writeUInt16LE(
-        numChannels,
-        22
-    );
-
-    buffer.writeUInt32LE(
-        sampleRate,
-        24
-    );
-
-    buffer.writeUInt32LE(
-        byteRate,
-        28
-    );
-
-    buffer.writeUInt16LE(
-        blockAlign,
-        32
-    );
-
-    buffer.writeUInt16LE(
-        bitsPerSample,
-        34
-    );
-
-    buffer.write("data", 36);
-
-    buffer.writeUInt32LE(
-        pcmData.length,
-        40
-    );
-
-    pcmData.copy(
-        buffer,
-        44
-    );
-
-    return buffer;
-}
-
-
-// ======================================================
-// GET LOGGED-IN USER
-// ======================================================
-
-async function getAuthenticatedUser(req) {
-
-    const authorization =
-        req.headers.authorization;
-
-    if (
-        !authorization ||
-        !authorization.startsWith("Bearer ")
-    ) {
-        return null;
-    }
-
-    const token =
-        authorization
-            .replace("Bearer ", "")
-            .trim();
-
-    if (!token) {
-        return null;
-    }
-
-    try {
-
-        const {
-            data,
-            error
-        } = await supabaseAdmin.auth.getUser(
-            token
-        );
-
-        if (error) {
-            console.error(
-                "Auth error:",
-                error.message
-            );
-
-            return null;
+        #authScreen {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        return data?.user || null;
-
-    } catch (error) {
-
-        console.error(
-            "Authentication error:",
-            error
-        );
-
-        return null;
-    }
-}
-
-
-// ======================================================
-// GET SUBSCRIPTION
-// ======================================================
-
-async function getUserSubscription(userId) {
-
-    const {
-        data,
-        error
-    } = await supabaseAdmin
-        .from("user_subscriptions")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-    if (error) {
-        console.error(
-            "Subscription lookup error:",
-            error
-        );
-
-        throw error;
-    }
-
-    if (data) {
-        return data;
-    }
-
-    // IMPORTANT:
-    // This insert is performed by the SERVER
-    // using SUPABASE_SERVICE_ROLE_KEY.
-
-    const {
-        data: newSubscription,
-        error: insertError
-    } = await supabaseAdmin
-        .from("user_subscriptions")
-        .insert({
-            user_id: userId,
-            status: "inactive",
-            free_uses: 0
-        })
-        .select()
-        .single();
-
-    if (insertError) {
-
-        console.error(
-            "Subscription creation error:",
-            insertError
-        );
-
-        throw insertError;
-    }
-
-    return newSubscription;
-}
-
-
-// ======================================================
-// HOME
-// ======================================================
-
-app.get("/", (req, res) => {
-
-    res.json({
-        status: "online",
-        message:
-            "Voice Over Studio backend is working"
-    });
-
-});
-
-
-// ======================================================
-// HEALTH CHECK
-// ======================================================
-
-app.get("/health", (req, res) => {
-
-    res.json({
-        status: "ok"
-    });
-
-});
-
-
-// ======================================================
-// TTS GET TEST
-// ======================================================
-
-app.get("/tts", (req, res) => {
-
-    res.json({
-        status: "online",
-        message:
-            "TTS endpoint is online. Send POST request to /tts."
-    });
-
-});
-
-
-// ======================================================
-// SUBSCRIPTION
-// ======================================================
-
-app.get(
-    "/subscription",
-    async (req, res) => {
-
-        try {
-
-            const user =
-                await getAuthenticatedUser(req);
-
-            if (!user) {
-
-                return res
-                    .status(401)
-                    .json({
-                        error:
-                            "You must be logged in."
-                    });
-            }
-
-            const subscription =
-                await getUserSubscription(
-                    user.id
-                );
-
-            return res.json({
-
-                active:
-                    subscription.status ===
-                    "active",
-
-                status:
-                    subscription.status ||
-                    "inactive",
-
-                plan:
-                    subscription.plan ||
-                    null,
-
-                free_uses:
-                    Number(
-                        subscription.free_uses || 0
-                    )
-
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Subscription error:",
-                error
-            );
-
-            return res
-                .status(500)
-                .json({
-
-                    error:
-                        error?.message ||
-                        "Unable to check subscription."
-
-                });
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 32px 24px;
+            border-radius: 20px;
+            background: white;
+            box-sizing: border-box;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+            text-align: center;
         }
 
-    }
-);
-
-
-// ======================================================
-// VERIFY PAYSTACK PAYMENT
-// ======================================================
-
-app.post(
-    "/verify-payment",
-    async (req, res) => {
-
-        try {
-
-            // ------------------------------------------
-            // AUTHENTICATE
-            // ------------------------------------------
-
-            const user =
-                await getAuthenticatedUser(req);
-
-            if (!user) {
-
-                return res
-                    .status(401)
-                    .json({
-                        error:
-                            "You must be logged in."
-                    });
-            }
-
-
-            // ------------------------------------------
-            // REQUEST
-            // ------------------------------------------
-
-            const {
-                reference,
-                plan
-            } = req.body;
-
-            if (!reference) {
-
-                return res
-                    .status(400)
-                    .json({
-                        error:
-                            "Payment reference is required."
-                    });
-            }
-
-
-            // ------------------------------------------
-            // ALLOWED PLANS
-            // ------------------------------------------
-
-            const allowedPlans = [
-                "basic",
-                "standard",
-                "pro"
-            ];
-
-            const selectedPlan =
-                allowedPlans.includes(
-                    String(plan).toLowerCase()
-                )
-                    ? String(plan).toLowerCase()
-                    : "standard";
-
-
-            // ------------------------------------------
-            // VERIFY PAYMENT WITH PAYSTACK
-            // ------------------------------------------
-
-            const paystackResponse =
-                await fetch(
-                    "https://api.paystack.co/transaction/verify/" +
-                    encodeURIComponent(reference),
-                    {
-                        method: "GET",
-
-                        headers: {
-                            Authorization:
-                                `Bearer ${PAYSTACK_SECRET_KEY}`,
-
-                            "Content-Type":
-                                "application/json"
-                        }
-                    }
-                );
-
-            const result =
-                await paystackResponse.json();
-
-            console.log(
-                "Paystack verification:",
-                result
-            );
-
-
-            if (
-                !paystackResponse.ok ||
-                !result.status ||
-                result.data?.status !== "success"
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-
-                        error:
-                            "Payment could not be verified."
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // CHECK PAYMENT EMAIL
-            // ------------------------------------------
-
-            const paidEmail =
-                result.data?.customer?.email;
-
-            if (
-                paidEmail &&
-                user.email &&
-                paidEmail.toLowerCase() !==
-                user.email.toLowerCase()
-            ) {
-
-                return res
-                    .status(403)
-                    .json({
-
-                        error:
-                            "Payment email does not match your account."
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // GET EXISTING SUBSCRIPTION
-            // ------------------------------------------
-
-            const {
-                data: existing,
-                error: lookupError
-            } =
-                await supabaseAdmin
-                    .from("user_subscriptions")
-                    .select("*")
-                    .eq("user_id", user.id)
-                    .maybeSingle();
-
-            if (lookupError) {
-
-                console.error(
-                    "Subscription lookup error:",
-                    lookupError
-                );
-
-                return res
-                    .status(500)
-                    .json({
-
-                        error:
-                            "Could not access subscription."
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // SUBSCRIPTION DATA
-            // ------------------------------------------
-
-            const subscriptionData = {
-
-                user_id:
-                    user.id,
-
-                plan:
-                    selectedPlan,
-
-                status:
-                    "active",
-
-                free_uses:
-                    Number(
-                        existing?.free_uses || 0
-                    ),
-
-                paystack_customer_code:
-                    result.data?.customer
-                        ?.customer_code || null,
-
-                paid_at:
-                    new Date().toISOString(),
-
-                updated_at:
-                    new Date().toISOString()
-
-            };
-
-
-            // ------------------------------------------
-            // UPDATE EXISTING
-            // ------------------------------------------
-
-            if (existing) {
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseAdmin
-                        .from(
-                            "user_subscriptions"
-                        )
-                        .update({
-
-                            plan:
-                                subscriptionData.plan,
-
-                            status:
-                                "active",
-
-                            paystack_customer_code:
-                                subscriptionData
-                                    .paystack_customer_code,
-
-                            paid_at:
-                                subscriptionData.paid_at,
-
-                            updated_at:
-                                subscriptionData.updated_at
-
-                        })
-                        .eq(
-                            "user_id",
-                            user.id
-                        )
-                        .select()
-                        .single();
-
-                if (error) {
-
-                    console.error(
-                        "Subscription update error:",
-                        error
-                    );
-
-                    return res
-                        .status(500)
-                        .json({
-
-                            error:
-                                "Payment succeeded but subscription could not be updated."
-
-                        });
-                }
-
-                return res.json({
-
-                    success: true,
-
-                    active: true,
-
-                    plan:
-                        data.plan,
-
-                    free_uses:
-                        Number(
-                            data.free_uses || 0
-                        )
-
-                });
-            }
-
-
-            // ------------------------------------------
-            // CREATE NEW SUBSCRIPTION
-            // ------------------------------------------
-
-            const {
-                data: created,
-                error: createError
-            } =
-                await supabaseAdmin
-                    .from(
-                        "user_subscriptions"
-                    )
-                    .insert(
-                        subscriptionData
-                    )
-                    .select()
-                    .single();
-
-            if (createError) {
-
-                console.error(
-                    "Subscription insert error:",
-                    createError
-                );
-
-                return res
-                    .status(500)
-                    .json({
-
-                        error:
-                            "Payment succeeded but subscription could not be created."
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // SUCCESS
-            // ------------------------------------------
-
-            return res.json({
-
-                success: true,
-
-                active: true,
-
-                plan:
-                    created.plan,
-
-                free_uses:
-                    Number(
-                        created.free_uses || 0
-                    )
-
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Payment verification error:",
-                error
-            );
-
-            return res
-                .status(500)
-                .json({
-
-                    error:
-                        error?.message ||
-                        "Payment verification failed."
-
-                });
+        .auth-card h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
         }
 
-    }
-);
-
-
-// ======================================================
-// TEXT TO SPEECH
-// ======================================================
-
-app.post(
-    "/tts",
-    async (req, res) => {
-
-        try {
-
-            // ------------------------------------------
-            // AUTHENTICATION
-            // ------------------------------------------
-
-            const user =
-                await getAuthenticatedUser(req);
-
-            if (!user) {
-
-                return res
-                    .status(401)
-                    .json({
-
-                        error:
-                            "Please login first."
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // GET SUBSCRIPTION
-            // ------------------------------------------
-
-            const account =
-                await getUserSubscription(
-                    user.id
-                );
-
-            const subscribed =
-                account.status === "active";
-
-            const freeUses =
-                Number(
-                    account.free_uses || 0
-                );
-
-
-            // ------------------------------------------
-            // FREE LIMIT
-            // ------------------------------------------
-
-            if (
-                !subscribed &&
-                freeUses >= 5
-            ) {
-
-                return res
-                    .status(402)
-                    .json({
-
-                        error:
-                            "Your 5 free voice generations have been used. Please subscribe to continue.",
-
-                        subscriptionRequired:
-                            true,
-
-                        free_uses:
-                            freeUses
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // REQUEST
-            // ------------------------------------------
-
-            const {
-                text,
-                voice
-            } = req.body;
-
-            if (
-                typeof text !== "string" ||
-                !text.trim()
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-
-                        error:
-                            "Text is required."
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // GEMINI VOICE
-            // ------------------------------------------
-
-            const selectedVoice =
-                voice || "Kore";
-
-            console.log(
-                "Generating voice:",
-                user.email
-            );
-
-            console.log(
-                "Voice:",
-                selectedVoice
-            );
-
-
-            const response =
-                await ai.models.generateContent({
-
-                    model:
-                        "gemini-2.5-flash-preview-tts",
-
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text:
-                                        text.trim()
-                                }
-                            ]
-                        }
-                    ],
-
-                    config: {
-
-                        responseModalities: [
-                            "AUDIO"
-                        ],
-
-                        speechConfig: {
-
-                            voiceConfig: {
-
-                                prebuiltVoiceConfig: {
-
-                                    voiceName:
-                                        selectedVoice
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                });
-
-
-            // ------------------------------------------
-            // FIND AUDIO
-            // ------------------------------------------
-
-            const audioPart =
-                response
-                    ?.candidates?.[0]
-                    ?.content?.parts
-                    ?.find(
-                        part =>
-                            part.inlineData?.data
-                    );
-
-            if (!audioPart) {
-
-                console.error(
-                    "Gemini returned no audio."
-                );
-
-                return res
-                    .status(500)
-                    .json({
-
-                        error:
-                            "Gemini did not return audio."
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // BASE64 → PCM
-            // ------------------------------------------
-
-            const pcm =
-                Buffer.from(
-                    audioPart.inlineData.data,
-                    "base64"
-                );
-
-            if (!pcm.length) {
-
-                return res
-                    .status(500)
-                    .json({
-
-                        error:
-                            "Gemini returned empty audio."
-
-                    });
-            }
-
-
-            // ------------------------------------------
-            // COUNT FREE USE
-            // ------------------------------------------
-
-            if (!subscribed) {
-
-                const newFreeUses =
-                    freeUses + 1;
-
-                const {
-                    error
-                } =
-                    await supabaseAdmin
-                        .from(
-                            "user_subscriptions"
-                        )
-                        .update({
-
-                            free_uses:
-                                newFreeUses,
-
-                            updated_at:
-                                new Date()
-                                    .toISOString()
-
-                        })
-                        .eq(
-                            "user_id",
-                            user.id
-                        );
-
-                if (error) {
-
-                    console.error(
-                        "Free-use update error:",
-                        error
-                    );
-
-                }
-
-                console.log(
-                    `Free uses: ${newFreeUses}/5`
-                );
-            }
-
-
-            // ------------------------------------------
-            // CREATE WAV
-            // ------------------------------------------
-
-            const wav =
-                createWav(
-                    pcm,
-                    24000
-                );
-
-
-            // ------------------------------------------
-            // SEND AUDIO
-            // ------------------------------------------
-
-            res.status(200);
-
-            res.setHeader(
-                "Content-Type",
-                "audio/wav"
-            );
-
-            res.setHeader(
-                "Content-Length",
-                wav.length
-            );
-
-            res.setHeader(
-                "Content-Disposition",
-                'inline; filename="voice-over.wav"'
-            );
-
-            return res.send(wav);
-
-        } catch (error) {
-
-            console.error(
-                "=============================="
-            );
-
-            console.error(
-                "TTS ERROR"
-            );
-
-            console.error(error);
-
-            console.error(
-                "=============================="
-            );
-
-            return res
-                .status(500)
-                .json({
-
-                    error:
-                        error?.message ||
-                        "Voice generation failed."
-
-                });
+        .auth-subtitle {
+            margin: 0 0 28px;
+            color: #666;
+            font-size: 14px;
         }
 
-    }
-);
+        .auth-card h2 {
+            margin-bottom: 20px;
+        }
 
+        .auth-input {
+            width: 100%;
+            padding: 14px 15px;
+            margin-bottom: 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+        }
 
-// ======================================================
-// 404
-// ======================================================
+        .auth-input:focus {
+            border-color: #555;
+        }
 
-app.use(
-    (req, res) => {
+        .auth-button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-        res
-            .status(404)
-            .json({
+        #loginButton {
+            background: #111;
+            color: white;
+        }
 
-                error:
-                    "Route not found",
+        #signupButton {
+            background: #f0f0f0;
+            color: #111;
+            margin-top: 12px;
+        }
 
-                path:
-                    req.path
+        .auth-button:active {
+            transform: scale(0.98);
+        }
 
-            });
+        #authStatus {
+            min-height: 20px;
+            margin-top: 18px;
+            font-size: 14px;
+        }
 
-    }
-);
+        /* ==============================
+           SUBSCRIPTION BAR
+        ============================== */
 
+        .subscription-bar {
+            width: calc(100% - 30px);
+            max-width: 900px;
+            margin: 15px auto;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
 
-// ======================================================
-// START SERVER
-// ======================================================
+        .subscription-info {
+            text-align: left;
+        }
 
-app.listen(
-    PORT,
-    "0.0.0.0",
-    () => {
+        .subscription-info strong {
+            display: block;
+            font-size: 14px;
+        }
 
-        console.log(
-            `Voice Over Studio backend running on port ${PORT}`
-        );
+        #freeUsageText {
+            display: block;
+            margin-top: 4px;
+            color: #666;
+            font-size: 12px;
+        }
 
-        console.log(
-            "Supabase URL:",
-            Boolean(SUPABASE_URL)
-        );
+        .small-subscription-button {
+            border: none;
+            background: #111;
+            color: white;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
 
-        console.log(
-            "Supabase secret/service key:",
-            Boolean(
-                SUPABASE_SERVICE_ROLE_KEY
-            )
-        );
+        /* ==============================
+           VOICE SELECT
+        ============================== */
 
-        console.log(
-            "Gemini:",
-            Boolean(GEMINI_API_KEY)
-        );
+        #voice {
+            width: 100%;
+            padding: 14px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
 
-        console.log(
-            "Paystack:",
-            Boolean(PAYSTACK_SECRET_KEY)
-        );
+        /* ==============================
+           PRICING
+        ============================== */
 
-    }
-);
+        .pricing {
+            width: 100%;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 25px;
+            box-sizing: border-box;
+            text-align: center;
+            background: #f8f8f8;
+            border-radius: 18px;
+        }
+
+        .pricing h2 {
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .pricing-description {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .pricing-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .price-card {
+            background: white;
+            border-radius: 18px;
+            padding: 28px 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+        }
+
+        .price-card h3 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        .plan-price {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .plan-price .amount {
+            font-size: 30px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        .plan-price .period {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .price-card p {
+            color: #666;
+            line-height: 1.5;
+            min-height: 65px;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #111;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+        }
+
+        .payment-status {
+            min-height: 25px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        /* ==============================
+           FREE LIMIT
+        ============================== */
+
+        .limit-message {
+            display: none;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 18px;
+            background: #fff3cd;
+            border: 1px solid #ffe69c;
+            border-radius: 12px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .limit-message strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .limit-message p {
+            margin: 0 0 12px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .limit-subscribe-button {
+            border: none;
+            background: #111;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* ==============================
+           MOBILE
+        ============================== */
+
+        @media (max-width: 700px) {
+            .pricing-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #authScreen {
+                padding: 15px;
+            }
+
+            .auth-card {
+                padding: 28px 20px;
+            }
+
+            .auth-card h1 {
+                font-size: 24px;
+            }
+
+            .pricing {
+                padding: 15px;
+            }
+
+            .subscription-bar {
+                width: calc(100% - 20px);
+                padding: 11px 12px;
+            }
+
+            .small-subscription-button {
+                padding: 8px 11px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN -->
+
+    <div id="authScreen">
+
+        <div class="auth-card">
+
+            <h1>🎙️ Voice Over Studio</h1>
+
+            <p class="auth-subtitle">
+                Create an account to start creating voice-overs.
+            </p>
+
+            <h2>Welcome</h2>
+
+            <input
+                class="auth-input"
+                type="email"
+                id="email"
+                placeholder="Email address"
+                autocomplete="email"
+            >
+
+            <input
+                class="auth-input"
+                type="password"
+                id="password"
+                placeholder="Password"
+                autocomplete="current-password"
+            >
+
+            <button
+                class="auth-button"
+                id="loginButton"
+            >
+                Login
+            </button>
+
+            <button
+                class="auth-button"
+                id="signupButton"
+            >
+                Create Account
+            </button>
+
+            <p id="authStatus"></p>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN APP -->
+
+    <div
+        class="app"
+        id="app"
+        style="display:none;"
+    >
+
+        <header>
+
+            <h1>🎙️ Voice Over Studio</h1>
+
+            <p>Turn your text into speech</p>
+
+        </header>
+
+        <!-- VIEW PLANS BUTTON -->
+
+        <div class="subscription-bar">
+
+            <div class="subscription-info">
+
+                <strong>
+                    Free Voice Generations
+                </strong>
+
+                <span id="freeUsageText">
+                    5 free generations available
+                </span>
+
+            </div>
+
+            <button
+                id="subscriptionButton"
+                class="small-subscription-button"
+            >
+                View Plans
+            </button>
+
+        </div>
+
+        <!-- FREE LIMIT -->
+
+        <div
+            id="limitMessage"
+            class="limit-message"
+        >
+
+            <strong>
+                🎙️ Free generations used
+            </strong>
+
+            <p>
+                You have used your 5 free voice generations.
+                Subscribe to continue creating voices.
+            </p>
+
+            <button
+                id="limitSubscribeButton"
+                class="limit-subscribe-button"
+            >
+                View Subscription Plans
+            </button>
+
+        </div>
+
+        <!-- VOICE STUDIO -->
+
+        <main
+            class="card"
+            id="voiceStudio"
+        >
+
+            <label for="text">
+                Voice-over script
+            </label>
+
+            <textarea
+                id="text"
+                placeholder="Write your script here..."
+            ></textarea>
+
+            <div class="counter">
+                <span id="count">0</span>
+                characters
+            </div>
+
+            <label for="voice">
+                🎙️ Select voice
+            </label>
+
+            <select id="voice"></select>
+
+            <!-- CONTROLS -->
+
+            <div class="controls">
+
+                <div class="control">
+
+                    <label for="rate">
+                        Speed
+                    </label>
+
+                    <input
+                        type="range"
+                        id="rate"
+                        min="0.5"
+                        max="2"
+                        value="1"
+                        step="0.1"
+                    >
+
+                    <span id="rateValue">1.0</span>
+
+                </div>
+
+                <div class="control">
+
+                    <label for="pitch">
+                        Pitch
+                    </label>
+
+                    <input
+                        type="range"
+                        id="pitch"
+                        min="0"
+                        max="2"
+                        value="1"
+                        step="0.1"
+                    >
+
+                    <span id="pitchValue">1.0</span>
+
+                </div>
+
+            </div>
+
+            <!-- AUDIO BUTTONS -->
+
+            <div class="buttons">
+
+                <button id="play">
+                    ▶ Play
+                </button>
+
+                <button id="pause">
+                    ⏸ Pause
+                </button>
+
+                <button id="resume">
+                    ▶ Resume
+                </button>
+
+                <button id="stop">
+                    ⏹ Stop
+                </button>
+
+            </div>
+
+            <div class="download-area">
+
+                <button
+                    id="download"
+                    class="download"
+                >
+                    ⬇️ Download Audio
+                </button>
+
+                <p id="downloadMessage">
+                    Generated audio can be downloaded here.
+                </p>
+
+            </div>
+
+            <div
+                id="status"
+                class="status"
+            >
+                Ready.
+            </div>
+
+        </main>
+
+        <!-- TIPS -->
+
+        <section class="tips">
+
+            <h2>
+                💡 Make your voice sound natural
+            </h2>
+
+            <p>
+                Use commas for short pauses.
+            </p>
+
+            <p>
+                Use full stops between ideas.
+            </p>
+
+        </section>
+
+        <!-- PRICING -->
+
+        <section
+            class="pricing"
+            id="pricing"
+            style="display:none;"
+        >
+
+            <h2>
+                Choose Your Plan
+            </h2>
+
+            <p class="pricing-description">
+                Subscribe to continue creating AI voice-overs.
+            </p>
+
+            <div class="pricing-container">
+
+                <!-- BASIC ₦2,000 -->
+
+                <div class="price-card">
+
+                    <h3>Basic</h3>
+
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦2,000
+                        </span>
+
+                        <span class="period">
+                            / week
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Basic access to AI voice generation
+                        with standard usage limits.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="basicPlanButton"
+                    >
+                        Subscribe to Basic
+                    </button>
+
+                </div>
+
+                <!-- STANDARD ₦3,000 -->
+
+                <div class="price-card">
+
+                    <h3>Standard</h3>
+
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦3,000
+                        </span>
+
+                        <span class="period">
+                            / week
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Enhanced access to AI voice generation
+                        with higher usage limits.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="standardPlanButton"
+                    >
+                        Subscribe to Standard
+                    </button>
+
+                </div>
+
+                <!-- PRO ₦5,000 -->
+
+                <div class="price-card">
+
+                    <h3>Pro</h3>
+
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦5,000
+                        </span>
+
+                        <span class="period">
+                            / week
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Premium access to AI voice generation
+                        with the highest usage limits
+                        and premium features.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="proPlanButton"
+                    >
+                        Subscribe to Pro
+                    </button>
+
+                </div>
+
+            </div>
+
+            <p
+                id="paymentStatus"
+                class="payment-status"
+            ></p>
+
+        </section>
+
+    </div>
+
+    <!-- SUPABASE -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- PAYSTACK -->
+
+    <script src="https://js.paystack.co/v2/inline.js"></script>
+
+    <!-- JAVASCRIPT -->
+
+    <script src="index.js"></script>
+
+</body>
+
+</html>
