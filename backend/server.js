@@ -1,49 +1,65 @@
-import express from "express";
+ import express from "express";
 import cors from "cors";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 
 const app = express();
 
+
 // ======================================
 // ENVIRONMENT VARIABLES
 // ======================================
 
-const {
-    PORT = 10000,
-    GEMINI_API_KEY,
-    SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY,
-    PAYSTACK_SECRET_KEY
-} = process.env;
+const PORT = process.env.PORT || 10000;
+
+const GEMINI_API_KEY =
+    process.env.GEMINI_API_KEY;
+
+const SUPABASE_URL =
+    process.env.SUPABASE_URL;
+
+const SUPABASE_SECRET_KEY =
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const PAYSTACK_SECRET_KEY =
+    process.env.PAYSTACK_SECRET_KEY;
 
 
 // ======================================
 // CHECK ENVIRONMENT VARIABLES
 // ======================================
 
-const missingVariables = [];
+const missing = [];
 
 if (!GEMINI_API_KEY) {
-    missingVariables.push("GEMINI_API_KEY");
+    missing.push("GEMINI_API_KEY");
 }
 
 if (!SUPABASE_URL) {
-    missingVariables.push("SUPABASE_URL");
+    missing.push("SUPABASE_URL");
 }
 
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-    missingVariables.push("SUPABASE_SERVICE_ROLE_KEY");
+if (!SUPABASE_SECRET_KEY) {
+    missing.push(
+        "SUPABASE_SECRET_KEY"
+    );
 }
 
 if (!PAYSTACK_SECRET_KEY) {
-    missingVariables.push("PAYSTACK_SECRET_KEY");
+    missing.push(
+        "PAYSTACK_SECRET_KEY"
+    );
 }
 
-if (missingVariables.length > 0) {
+if (missing.length > 0) {
+
     console.error(
-        "Missing environment variables:",
-        missingVariables.join(", ")
+        "Missing environment variables:"
+    );
+
+    console.error(
+        missing.join(", ")
     );
 
     process.exit(1);
@@ -51,19 +67,24 @@ if (missingVariables.length > 0) {
 
 
 // ======================================
-// CHECK SUPABASE ADMIN KEY
+// CHECK SUPABASE KEY
 // ======================================
 
 if (
-    SUPABASE_SERVICE_ROLE_KEY.startsWith("sb_publishable_") ||
-    SUPABASE_SERVICE_ROLE_KEY.startsWith("sb_anon_")
+    SUPABASE_SECRET_KEY.startsWith(
+        "sb_publishable_"
+    ) ||
+    SUPABASE_SECRET_KEY.startsWith(
+        "sb_anon_"
+    )
 ) {
+
     console.error(
-        "ERROR: SUPABASE_SERVICE_ROLE_KEY is a publishable/anon key."
+        "ERROR: You placed a publishable/anon key in the backend."
     );
 
     console.error(
-        "Render must contain your Supabase SECRET/SERVICE ROLE key."
+        "Use the Supabase SECRET key (sb_secret_...) or legacy service_role key."
     );
 
     process.exit(1);
@@ -100,25 +121,29 @@ app.use(
 // GEMINI
 // ======================================
 
-const ai = new GoogleGenAI({
-    apiKey: GEMINI_API_KEY
-});
+const ai =
+    new GoogleGenAI({
+        apiKey:
+            GEMINI_API_KEY
+    });
 
 
 // ======================================
 // SUPABASE ADMIN CLIENT
 // ======================================
 
-const supabaseAdmin = createClient(
-    SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
+const supabaseAdmin =
+    createClient(
+        SUPABASE_URL,
+        SUPABASE_SECRET_KEY,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+                detectSessionInUrl: false
+            }
         }
-    }
-);
+    );
 
 
 // ======================================
@@ -131,6 +156,7 @@ function createWav(
 ) {
 
     const numChannels = 1;
+
     const bitsPerSample = 16;
 
     const byteRate =
@@ -224,24 +250,29 @@ function createWav(
 
 
 // ======================================
-// GET AUTHENTICATED USER
+// AUTHENTICATED USER
 // ======================================
 
-async function getAuthenticatedUser(req) {
+async function getAuthenticatedUser(
+    req
+) {
 
     const authorization =
         req.headers.authorization;
 
     if (
         !authorization ||
-        !authorization.startsWith("Bearer ")
+        !authorization.startsWith(
+            "Bearer "
+        )
     ) {
+
         return null;
     }
 
     const token =
         authorization
-            .substring(7)
+            .slice(7)
             .trim();
 
     if (!token) {
@@ -261,7 +292,7 @@ async function getAuthenticatedUser(req) {
         if (error) {
 
             console.error(
-                "Supabase authentication error:",
+                "Auth error:",
                 error.message
             );
 
@@ -295,7 +326,9 @@ async function getUserSubscription(
         error
     } =
         await supabaseAdmin
-            .from("user_subscriptions")
+            .from(
+                "user_subscriptions"
+            )
             .select("*")
             .eq(
                 "user_id",
@@ -304,11 +337,6 @@ async function getUserSubscription(
             .maybeSingle();
 
     if (error) {
-
-        console.error(
-            "Subscription lookup error:",
-            error
-        );
 
         throw error;
     }
@@ -319,18 +347,15 @@ async function getUserSubscription(
     }
 
 
-    // ==================================
-    // CREATE NEW ACCOUNT
-    // ==================================
-
     const {
-        data: newAccount,
-        error: createError
+        data: created,
+        error: insertError
     } =
         await supabaseAdmin
-            .from("user_subscriptions")
+            .from(
+                "user_subscriptions"
+            )
             .insert({
-
                 user_id:
                     userId,
 
@@ -339,24 +364,16 @@ async function getUserSubscription(
 
                 free_uses:
                     0
-
             })
             .select()
             .single();
 
+    if (insertError) {
 
-    if (createError) {
-
-        console.error(
-            "Subscription creation error:",
-            createError
-        );
-
-        throw createError;
+        throw insertError;
     }
 
-
-    return newAccount;
+    return created;
 }
 
 
@@ -369,13 +386,11 @@ app.get(
     (req, res) => {
 
         res.json({
-
             status:
                 "online",
 
             message:
                 "Voice Over Studio backend is working"
-
         });
 
     }
@@ -383,7 +398,7 @@ app.get(
 
 
 // ======================================
-// TTS TEST
+// TTS GET TEST
 // ======================================
 
 app.get(
@@ -391,13 +406,11 @@ app.get(
     (req, res) => {
 
         res.json({
-
             status:
                 "online",
 
             message:
-                "TTS endpoint is online. Send a POST request to /tts."
-
+                "TTS endpoint is online. Send POST request to /tts."
         });
 
     }
@@ -424,19 +437,15 @@ app.get(
                 return res
                     .status(401)
                     .json({
-
                         error:
                             "You must be logged in."
-
                     });
             }
-
 
             const subscription =
                 await getUserSubscription(
                     user.id
                 );
-
 
             return res.json({
 
@@ -462,7 +471,7 @@ app.get(
         } catch (error) {
 
             console.error(
-                "Subscription endpoint error:",
+                "Subscription error:",
                 error
             );
 
@@ -476,13 +485,12 @@ app.get(
 
                 });
         }
-
     }
 );
 
 
 // ======================================
-// VERIFY PAYSTACK PAYMENT
+// VERIFY PAYSTACK
 // ======================================
 
 app.post(
@@ -491,32 +499,21 @@ app.post(
 
         try {
 
-            // ==================================
-            // AUTHENTICATE USER
-            // ==================================
-
             const user =
                 await getAuthenticatedUser(
                     req
                 );
-
 
             if (!user) {
 
                 return res
                     .status(401)
                     .json({
-
                         error:
                             "You must be logged in."
-
                     });
             }
 
-
-            // ==================================
-            // REQUEST DATA
-            // ==================================
 
             const {
                 reference,
@@ -529,54 +526,38 @@ app.post(
                 return res
                     .status(400)
                     .json({
-
                         error:
                             "Payment reference is required."
-
                     });
             }
 
 
             console.log(
-                "Verifying Paystack payment:",
+                "Checking Paystack:",
                 reference
             );
 
-
-            // ==================================
-            // VERIFY WITH PAYSTACK
-            // ==================================
 
             const response =
                 await fetch(
                     `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
                     {
-
                         method:
                             "GET",
 
                         headers: {
-
                             Authorization:
                                 `Bearer ${PAYSTACK_SECRET_KEY}`,
 
                             "Content-Type":
                                 "application/json"
-
                         }
-
                     }
                 );
 
 
             const result =
                 await response.json();
-
-
-            console.log(
-                "Paystack response:",
-                result
-            );
 
 
             if (
@@ -589,16 +570,14 @@ app.post(
                 return res
                     .status(400)
                     .json({
-
                         error:
                             "Payment could not be verified."
-
                     });
             }
 
 
             // ==================================
-            // CHECK PAYMENT EMAIL
+            // CHECK EMAIL
             // ==================================
 
             const paidEmail =
@@ -617,24 +596,24 @@ app.post(
                 return res
                     .status(403)
                     .json({
-
                         error:
                             "Payment email does not match your account."
-
                     });
             }
 
 
             // ==================================
-            // GET EXISTING SUBSCRIPTION
+            // GET CURRENT ACCOUNT
             // ==================================
 
             const {
-                data: existingSubscription,
+                data: existing,
                 error: existingError
             } =
                 await supabaseAdmin
-                    .from("user_subscriptions")
+                    .from(
+                        "user_subscriptions"
+                    )
                     .select("*")
                     .eq(
                         "user_id",
@@ -645,68 +624,18 @@ app.post(
 
             if (existingError) {
 
-                console.error(
-                    "Existing subscription lookup error:",
-                    existingError
-                );
-
-                return res
-                    .status(500)
-                    .json({
-
-                        error:
-                            "Could not access subscription account."
-
-                    });
+                throw existingError;
             }
 
 
             // ==================================
-            // PREPARE SUBSCRIPTION DATA
+            // SAVE PAYMENT
             // ==================================
 
-            const subscriptionData = {
-
-                user_id:
-                    user.id,
-
-                plan:
-                    plan ||
-                    "standard",
-
-                status:
-                    "active",
-
-                free_uses:
-                    existingSubscription
-                        ?.free_uses ||
-                    0,
-
-                paystack_customer_code:
-                    result.data
-                        ?.customer
-                        ?.customer_code ||
-                    null,
-
-                paid_at:
-                    new Date()
-                        .toISOString(),
-
-                updated_at:
-                    new Date()
-                        .toISOString()
-
-            };
+            let saved;
 
 
-            // ==================================
-            // SAVE SUBSCRIPTION
-            // ==================================
-
-            let savedSubscription;
-
-
-            if (existingSubscription) {
+            if (existing) {
 
                 const {
                     data,
@@ -719,22 +648,25 @@ app.post(
                         .update({
 
                             plan:
-                                subscriptionData.plan,
+                                plan ||
+                                "standard",
 
                             status:
                                 "active",
 
                             paystack_customer_code:
-                                subscriptionData
-                                    .paystack_customer_code,
+                                result.data
+                                    ?.customer
+                                    ?.customer_code ||
+                                null,
 
                             paid_at:
-                                subscriptionData
-                                    .paid_at,
+                                new Date()
+                                    .toISOString(),
 
                             updated_at:
-                                subscriptionData
-                                    .updated_at
+                                new Date()
+                                    .toISOString()
 
                         })
                         .eq(
@@ -747,23 +679,10 @@ app.post(
 
                 if (error) {
 
-                    console.error(
-                        "Subscription update error:",
-                        error
-                    );
-
-                    return res
-                        .status(500)
-                        .json({
-
-                            error:
-                                "Payment succeeded but subscription could not be updated."
-
-                        });
+                    throw error;
                 }
 
-
-                savedSubscription =
+                saved =
                     data;
 
             } else {
@@ -776,45 +695,49 @@ app.post(
                         .from(
                             "user_subscriptions"
                         )
-                        .insert(
-                            subscriptionData
-                        )
+                        .insert({
+
+                            user_id:
+                                user.id,
+
+                            plan:
+                                plan ||
+                                "standard",
+
+                            status:
+                                "active",
+
+                            free_uses:
+                                0,
+
+                            paystack_customer_code:
+                                result.data
+                                    ?.customer
+                                    ?.customer_code ||
+                                null,
+
+                            paid_at:
+                                new Date()
+                                    .toISOString(),
+
+                            updated_at:
+                                new Date()
+                                    .toISOString()
+
+                        })
                         .select()
                         .single();
 
 
                 if (error) {
 
-                    console.error(
-                        "Subscription insert error:",
-                        error
-                    );
-
-                    return res
-                        .status(500)
-                        .json({
-
-                            error:
-                                "Payment succeeded but subscription could not be created."
-
-                        });
+                    throw error;
                 }
 
-
-                savedSubscription =
+                saved =
                     data;
             }
 
-
-            console.log(
-                "Subscription successfully saved:",
-                savedSubscription
-            );
-
-
-            // ==================================
-            // SUCCESS
-            // ==================================
 
             return res.json({
 
@@ -825,12 +748,11 @@ app.post(
                     true,
 
                 plan:
-                    savedSubscription.plan,
+                    saved.plan,
 
                 free_uses:
                     Number(
-                        savedSubscription.free_uses ||
-                        0
+                        saved.free_uses || 0
                     )
 
             });
@@ -853,7 +775,6 @@ app.post(
 
                 });
         }
-
     }
 );
 
@@ -869,7 +790,7 @@ app.post(
         try {
 
             // ==================================
-            // AUTHENTICATION
+            // LOGIN CHECK
             // ==================================
 
             const user =
@@ -877,22 +798,19 @@ app.post(
                     req
                 );
 
-
             if (!user) {
 
                 return res
                     .status(401)
                     .json({
-
                         error:
                             "Please login first."
-
                     });
             }
 
 
             // ==================================
-            // GET ACCOUNT
+            // ACCOUNT
             // ==================================
 
             const account =
@@ -901,15 +819,14 @@ app.post(
                 );
 
 
-            const isSubscribed =
+            const subscribed =
                 account.status ===
                 "active";
 
 
             const freeUses =
                 Number(
-                    account.free_uses ||
-                    0
+                    account.free_uses || 0
                 );
 
 
@@ -918,7 +835,7 @@ app.post(
             // ==================================
 
             if (
-                !isSubscribed &&
+                !subscribed &&
                 freeUses >= 5
             ) {
 
@@ -940,7 +857,7 @@ app.post(
 
 
             // ==================================
-            // REQUEST DATA
+            // REQUEST
             // ==================================
 
             const {
@@ -958,10 +875,8 @@ app.post(
                 return res
                     .status(400)
                     .json({
-
                         error:
                             "Text is required."
-
                     });
             }
 
@@ -972,7 +887,7 @@ app.post(
 
 
             console.log(
-                "Generating voice for:",
+                "Generating:",
                 user.email
             );
 
@@ -993,22 +908,14 @@ app.post(
                         "gemini-2.5-flash-preview-tts",
 
                     contents: [
-
                         {
-
                             parts: [
-
                                 {
-
                                     text:
                                         text.trim()
-
                                 }
-
                             ]
-
                         }
-
                     ],
 
                     config: {
@@ -1038,7 +945,7 @@ app.post(
 
 
             // ==================================
-            // FIND AUDIO
+            // AUDIO
             // ==================================
 
             const audioPart =
@@ -1054,24 +961,14 @@ app.post(
 
             if (!audioPart) {
 
-                console.error(
-                    "Gemini did not return audio."
-                );
-
                 return res
                     .status(500)
                     .json({
-
                         error:
                             "Gemini did not return audio."
-
                     });
             }
 
-
-            // ==================================
-            // BASE64 → PCM
-            // ==================================
 
             const pcm =
                 Buffer.from(
@@ -1087,10 +984,8 @@ app.post(
                 return res
                     .status(500)
                     .json({
-
                         error:
                             "Gemini returned empty audio."
-
                     });
             }
 
@@ -1099,14 +994,14 @@ app.post(
             // COUNT FREE USE
             // ==================================
 
-            if (!isSubscribed) {
+            if (!subscribed) {
 
-                const newFreeUses =
+                const newUses =
                     freeUses + 1;
 
 
                 const {
-                    error: updateError
+                    error
                 } =
                     await supabaseAdmin
                         .from(
@@ -1115,7 +1010,7 @@ app.post(
                         .update({
 
                             free_uses:
-                                newFreeUses,
+                                newUses,
 
                             updated_at:
                                 new Date()
@@ -1128,25 +1023,23 @@ app.post(
                         );
 
 
-                if (updateError) {
+                if (error) {
 
                     console.error(
                         "Free-use update error:",
-                        updateError
+                        error
                     );
 
                 }
 
-
                 console.log(
-                    `Free uses: ${newFreeUses}/5`
+                    `Free uses: ${newUses}/5`
                 );
-
             }
 
 
             // ==================================
-            // PCM → WAV
+            // WAV
             // ==================================
 
             const wav =
@@ -1155,10 +1048,6 @@ app.post(
                     24000
                 );
 
-
-            // ==================================
-            // SEND AUDIO
-            // ==================================
 
             res.status(200);
 
@@ -1178,27 +1067,20 @@ app.post(
             );
 
 
-            return res.send(wav);
+            return res.send(
+                wav
+            );
 
 
         } catch (error) {
 
             console.error(
-                "=============================="
-            );
-
-            console.error(
-                "TTS ERROR"
+                "TTS ERROR:"
             );
 
             console.error(
                 error
             );
-
-            console.error(
-                "=============================="
-            );
-
 
             return res
                 .status(500)
@@ -1209,15 +1091,13 @@ app.post(
                         "Voice generation failed."
 
                 });
-
         }
-
     }
 );
 
 
 // ======================================
-// 404 HANDLER
+// 404
 // ======================================
 
 app.use(
@@ -1234,7 +1114,6 @@ app.use(
                     req.path
 
             });
-
     }
 );
 
@@ -1254,13 +1133,15 @@ app.listen(
 
         console.log(
             "Supabase URL configured:",
-            Boolean(SUPABASE_URL)
+            Boolean(
+                SUPABASE_URL
+            )
         );
 
         console.log(
-            "Supabase admin key configured:",
+            "Supabase secret/service key configured:",
             Boolean(
-                SUPABASE_SERVICE_ROLE_KEY
+                SUPABASE_SECRET_KEY
             )
         );
 
