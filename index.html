@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -165,12 +165,22 @@
             font-size: 22px;
         }
 
-        .price-card h4 {
-            font-size: 28px;
+        /* PRICE */
+        .plan-price {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 5px;
             margin: 15px 0;
         }
 
-        .price-card h4 span {
+        .plan-price .amount {
+            font-size: 30px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        .plan-price .period {
             font-size: 14px;
             color: #666;
             font-weight: normal;
@@ -182,6 +192,7 @@
             min-height: 65px;
         }
 
+        /* SUBSCRIBE BUTTON */
         .pay-button {
             width: 100%;
             padding: 14px;
@@ -308,7 +319,6 @@
     </div>
 
 
-
     <!-- ==============================
          VOICE OVER STUDIO
     ============================== -->
@@ -320,9 +330,7 @@
     >
 
 
-        <!-- ==============================
-             HEADER
-        ============================== -->
+        <!-- HEADER -->
 
         <header>
 
@@ -335,7 +343,6 @@
             </p>
 
         </header>
-
 
 
         <!-- ==============================
@@ -356,9 +363,7 @@
             <div class="pricing-container">
 
 
-                <!-- ==============================
-                     BASIC
-                ============================== -->
+                <!-- BASIC -->
 
                 <div class="price-card">
 
@@ -366,12 +371,17 @@
                         Basic
                     </h3>
 
-                    <h4>
-                        ₦1,000
-                        <span>
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦1,000
+                        </span>
+
+                        <span class="period">
                             / week
                         </span>
-                    </h4>
+
+                    </div>
 
                     <p>
                         Basic access to AI voice generation
@@ -388,10 +398,7 @@
                 </div>
 
 
-
-                <!-- ==============================
-                     STANDARD
-                ============================== -->
+                <!-- STANDARD -->
 
                 <div class="price-card">
 
@@ -399,12 +406,17 @@
                         Standard
                     </h3>
 
-                    <h4>
-                        ₦3,000
-                        <span>
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦3,000
+                        </span>
+
+                        <span class="period">
                             / week
                         </span>
-                    </h4>
+
+                    </div>
 
                     <p>
                         Enhanced access to AI voice generation
@@ -421,10 +433,7 @@
                 </div>
 
 
-
-                <!-- ==============================
-                     PRO
-                ============================== -->
+                <!-- PRO -->
 
                 <div class="price-card">
 
@@ -432,12 +441,17 @@
                         Pro
                     </h3>
 
-                    <h4>
-                        ₦5,000
-                        <span>
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦5,000
+                        </span>
+
+                        <span class="period">
                             / week
                         </span>
-                    </h4>
+
+                    </div>
 
                     <p>
                         Premium access to AI voice generation
@@ -466,18 +480,15 @@
         </section>
 
 
-
         <!-- ==============================
              VOICE STUDIO
         ============================== -->
 
         <main class="card">
 
-
             <label for="text">
                 Voice-over script
             </label>
-
 
             <textarea
                 id="text"
@@ -504,15 +515,11 @@ Let's get started."
             </div>
 
 
-
-            <!-- ==============================
-                 VOICE SELECTION
-            ============================== -->
+            <!-- VOICE -->
 
             <label for="voice">
                 🎙️ Select voice
             </label>
-
 
             <select id="voice">
 
@@ -543,13 +550,9 @@ Let's get started."
             </select>
 
 
-
-            <!-- ==============================
-                 CONTROLS
-            ============================== -->
+            <!-- CONTROLS -->
 
             <div class="controls">
-
 
                 <div class="control">
 
@@ -573,7 +576,6 @@ Let's get started."
                 </div>
 
 
-
                 <div class="control">
 
                     <label for="pitch">
@@ -595,14 +597,10 @@ Let's get started."
 
                 </div>
 
-
             </div>
 
 
-
-            <!-- ==============================
-                 AUDIO BUTTONS
-            ============================== -->
+            <!-- AUDIO BUTTONS -->
 
             <div class="buttons">
 
@@ -625,10 +623,7 @@ Let's get started."
             </div>
 
 
-
-            <!-- ==============================
-                 DOWNLOAD
-            ============================== -->
+            <!-- DOWNLOAD -->
 
             <div class="download-area">
 
@@ -646,10 +641,7 @@ Let's get started."
             </div>
 
 
-
-            <!-- ==============================
-                 STATUS
-            ============================== -->
+            <!-- STATUS -->
 
             <div
                 id="status"
@@ -658,14 +650,10 @@ Let's get started."
                 Ready.
             </div>
 
-
         </main>
 
 
-
-        <!-- ==============================
-             TIPS
-        ============================== -->
+        <!-- TIPS -->
 
         <section class="tips">
 
@@ -694,14 +682,11 @@ Let's get started."
     </div>
 
 
-
     <!-- ==============================
          SUPABASE
-         MUST LOAD BEFORE index.js
     ============================== -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 
 
     <!-- ==============================
@@ -711,9 +696,8 @@ Let's get started."
     <script src="https://js.paystack.co/v2/inline.js"></script>
 
 
-
     <!-- ==============================
-         YOUR JAVASCRIPT
+         JAVASCRIPT
     ============================== -->
 
     <script src="index.js"></script>
