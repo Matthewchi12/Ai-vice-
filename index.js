@@ -229,8 +229,12 @@ signupButton.addEventListener(
                 error
             } =
                 await supabaseClient.auth.signUp({
-                    email,
-                    password
+    email,
+    password,
+    options: {
+        emailRedirectTo: "https://matthewchi12.github.io/Ai-vice-/"
+    }
+});
                 });
 
             if (error) {
