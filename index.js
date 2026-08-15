@@ -55,6 +55,7 @@ function showApp() {
         app.style.display = "block";
     }
 
+    updateFreeTrialDisplay();
 }
 
 
@@ -366,6 +367,406 @@ options.forEach(
 
 
 // ======================================
+// FREE TRIAL SYSTEM
+// ======================================
+
+const FREE_GENERATIONS = 5;
+
+let freeGenerationsUsed = 0;
+
+
+// ======================================
+// UNIQUE STORAGE KEY FOR USER
+// ======================================
+
+async function getTrialStorageKey() {
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.getUser();
+
+    if (error || !data.user) {
+
+        return null;
+
+    }
+
+    return "voiceTrial_" + data.user.id;
+
+}
+
+
+// ======================================
+// LOAD FREE GENERATIONS
+// ======================================
+
+async function loadFreeGenerations() {
+
+    const key =
+        await getTrialStorageKey();
+
+    if (!key) {
+
+        freeGenerationsUsed = 0;
+
+        return;
+
+    }
+
+    const saved =
+        localStorage.getItem(key);
+
+    if (saved === null) {
+
+        freeGenerationsUsed = 0;
+
+    } else {
+
+        freeGenerationsUsed =
+            Number(saved) || 0;
+
+    }
+
+}
+
+
+// ======================================
+// SAVE FREE GENERATIONS
+// ======================================
+
+async function saveFreeGenerations() {
+
+    const key =
+        await getTrialStorageKey();
+
+    if (!key) {
+
+        return;
+
+    }
+
+    localStorage.setItem(
+        key,
+        freeGenerationsUsed.toString()
+    );
+
+}
+
+
+// ======================================
+// CHECK FREE ACCESS
+// ======================================
+
+function hasFreeAccess() {
+
+    return (
+        freeGenerationsUsed <
+        FREE_GENERATIONS
+    );
+
+}
+
+
+// ======================================
+// UPDATE TRIAL DISPLAY
+// ======================================
+
+function updateFreeTrialDisplay() {
+
+    let trialBox =
+        document.getElementById(
+            "freeTrialNotice"
+        );
+
+
+    if (!trialBox) {
+
+        trialBox =
+            document.createElement("div");
+
+        trialBox.id =
+            "freeTrialNotice";
+
+        trialBox.style.margin =
+            "10px auto 20px";
+
+        trialBox.style.padding =
+            "10px 14px";
+
+        trialBox.style.borderRadius =
+            "10px";
+
+        trialBox.style.background =
+            "#f5f5f5";
+
+        trialBox.style.textAlign =
+            "center";
+
+        trialBox.style.maxWidth =
+            "500px";
+
+        trialBox.style.fontSize =
+            "14px";
+
+        trialBox.style.color =
+            "#333";
+
+
+        const header =
+            app.querySelector("header");
+
+
+        if (header) {
+
+            header.insertAdjacentElement(
+                "afterend",
+                trialBox
+            );
+
+        }
+
+    }
+
+
+    const remaining =
+        Math.max(
+            0,
+            FREE_GENERATIONS -
+            freeGenerationsUsed
+        );
+
+
+    if (remaining > 0) {
+
+        trialBox.innerHTML =
+            `🎁 <strong>${remaining}</strong> free voice generation${remaining === 1 ? "" : "s"} remaining. 
+            <span style="color:#666;">
+            Subscription plans available below.
+            </span>`;
+
+    } else {
+
+        trialBox.innerHTML =
+            `🔒 <strong>Free trial finished.</strong> 
+            Please subscribe to continue generating voices.`;
+
+    }
+
+}
+
+
+// ======================================
+// PRICING SECTION
+// ======================================
+
+const pricingSection =
+    document.querySelector(".pricing");
+
+
+// ======================================
+// HIDE PRICING INITIALLY
+// ======================================
+
+if (pricingSection) {
+
+    pricingSection.style.display =
+        "none";
+
+}
+
+
+// ======================================
+// SHOW PRICING
+// ======================================
+
+function showPricing() {
+
+    if (pricingSection) {
+
+        pricingSection.style.display =
+            "block";
+
+        pricingSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    }
+
+}
+
+
+// ======================================
+// LOCK VOICE STUDIO
+// ======================================
+
+function lockVoiceStudio() {
+
+    const voiceCard =
+        document.querySelector(
+            ".card"
+        );
+
+    if (!voiceCard) {
+
+        return;
+
+    }
+
+
+    voiceCard.style.position =
+        "relative";
+
+
+    let lockMessage =
+        document.getElementById(
+            "subscriptionLock"
+        );
+
+
+    if (!lockMessage) {
+
+        lockMessage =
+            document.createElement("div");
+
+        lockMessage.id =
+            "subscriptionLock";
+
+
+        lockMessage.style.position =
+            "absolute";
+
+        lockMessage.style.inset =
+            "0";
+
+        lockMessage.style.background =
+            "rgba(255,255,255,0.94)";
+
+        lockMessage.style.display =
+            "flex";
+
+        lockMessage.style.flexDirection =
+            "column";
+
+        lockMessage.style.justifyContent =
+            "center";
+
+        lockMessage.style.alignItems =
+            "center";
+
+        lockMessage.style.textAlign =
+            "center";
+
+        lockMessage.style.padding =
+            "30px";
+
+        lockMessage.style.boxSizing =
+            "border-box";
+
+        lockMessage.style.borderRadius =
+            "15px";
+
+        lockMessage.style.zIndex =
+            "20";
+
+
+        lockMessage.innerHTML = `
+
+            <div style="font-size:42px;">
+                🔒
+            </div>
+
+            <h2 style="margin:10px 0;">
+                Free trial finished
+            </h2>
+
+            <p style="max-width:350px;color:#666;">
+                You have used your 5 free voice generations.
+                Subscribe to a plan to continue creating voice-overs.
+            </p>
+
+            <button
+                id="unlockSubscriptionButton"
+                style="
+                    padding:13px 22px;
+                    border:none;
+                    border-radius:10px;
+                    background:#111;
+                    color:white;
+                    font-weight:600;
+                    cursor:pointer;
+                "
+            >
+                View Subscription Plans
+            </button>
+
+        `;
+
+
+        voiceCard.appendChild(
+            lockMessage
+        );
+
+
+        document
+            .getElementById(
+                "unlockSubscriptionButton"
+            )
+            .addEventListener(
+                "click",
+                showPricing
+            );
+
+    }
+
+}
+
+
+// ======================================
+// UNLOCK VOICE STUDIO
+// ======================================
+
+function unlockVoiceStudio() {
+
+    const lockMessage =
+        document.getElementById(
+            "subscriptionLock"
+        );
+
+    if (lockMessage) {
+
+        lockMessage.remove();
+
+    }
+
+}
+
+
+// ======================================
+// INITIALIZE TRIAL
+// ======================================
+
+async function initializeTrial() {
+
+    await loadFreeGenerations();
+
+    updateFreeTrialDisplay();
+
+    if (!hasFreeAccess()) {
+
+        lockVoiceStudio();
+
+    }
+
+}
+
+
+initializeTrial();
+
+
+// ======================================
 // CHARACTER COUNT
 // ======================================
 
@@ -428,10 +829,29 @@ async function generateAudio() {
     const originalScript =
         text.value.trim();
 
+
     if (!originalScript) {
 
         status.textContent =
             "Please enter some text.";
+
+        return null;
+
+    }
+
+
+    // ==================================
+    // CHECK FREE LIMIT
+    // ==================================
+
+    if (!hasFreeAccess()) {
+
+        status.textContent =
+            "🔒 Your 5 free generations are finished. Please subscribe.";
+
+        showPricing();
+
+        lockVoiceStudio();
 
         return null;
 
@@ -575,6 +995,17 @@ ${originalScript}`;
         }
 
 
+        // ==================================
+        // ONLY COUNT SUCCESSFUL GENERATION
+        // ==================================
+
+        freeGenerationsUsed++;
+
+        await saveFreeGenerations();
+
+        updateFreeTrialDisplay();
+
+
         if (currentAudioURL) {
 
             URL.revokeObjectURL(
@@ -615,7 +1046,27 @@ ${originalScript}`;
 
 
         status.textContent =
-            "✅ Voice generated.";
+            `✅ Voice generated. ${Math.max(0, FREE_GENERATIONS - freeGenerationsUsed)} free generation${Math.max(0, FREE_GENERATIONS - freeGenerationsUsed) === 1 ? "" : "s"} remaining.`;
+
+
+        // ==================================
+        // LOCK AFTER 5TH GENERATION
+        // ==================================
+
+        if (!hasFreeAccess()) {
+
+            setTimeout(
+                () => {
+
+                    lockVoiceStudio();
+
+                    showPricing();
+
+                },
+                1000
+            );
+
+        }
 
 
         return {
@@ -806,9 +1257,8 @@ downloadButton.addEventListener(
 
         try {
 
-            let blob;
-
-
+            // If there is no generated audio,
+            // generate one first.
             if (!currentAudio) {
 
                 const result =
@@ -820,22 +1270,17 @@ downloadButton.addEventListener(
 
                 }
 
-                blob =
-                    result.blob;
-
             }
 
-            else {
 
-                const response =
-                    await fetch(
-                        currentAudioURL
-                    );
+            const response =
+                await fetch(
+                    currentAudioURL
+                );
 
-                blob =
-                    await response.blob();
 
-            }
+            const blob =
+                await response.blob();
 
 
             const downloadURL =
@@ -901,7 +1346,7 @@ downloadButton.addEventListener(
 
 
 // ======================================
-// PAYSTACK SUBSCRIPTIONS
+// PAYSTACK
 // ======================================
 
 const PAYSTACK_PUBLIC_KEY =
@@ -931,7 +1376,9 @@ const PAYSTACK_PLANS = {
 // ======================================
 
 const paymentStatus =
-    document.getElementById("paymentStatus");
+    document.getElementById(
+        "paymentStatus"
+    );
 
 
 // ======================================
@@ -944,7 +1391,6 @@ async function startPaystackPayment(
 
     try {
 
-        // Check Paystack
         if (
             typeof PaystackPop ===
             "undefined"
@@ -962,7 +1408,6 @@ async function startPaystackPayment(
         }
 
 
-        // Get current Supabase user
         const {
             data,
             error
@@ -970,26 +1415,7 @@ async function startPaystackPayment(
             await supabaseClient.auth.getUser();
 
 
-        if (error) {
-
-            console.error(
-                "Supabase user error:",
-                error
-            );
-
-            if (paymentStatus) {
-
-                paymentStatus.textContent =
-                    "❌ Unable to get your account.";
-
-            }
-
-            return;
-
-        }
-
-
-        if (!data.user) {
+        if (error || !data.user) {
 
             if (paymentStatus) {
 
@@ -1029,7 +1455,6 @@ async function startPaystackPayment(
         }
 
 
-        // Create Paystack popup
         const popup =
             new PaystackPop();
 
@@ -1046,12 +1471,8 @@ async function startPaystackPayment(
                 planCode,
 
 
-            // ==================================
-            // PAYMENT SUCCESS
-            // ==================================
-
             onSuccess:
-                (transaction) => {
+                async (transaction) => {
 
                     console.log(
                         "Paystack transaction:",
@@ -1062,16 +1483,34 @@ async function startPaystackPayment(
                     if (paymentStatus) {
 
                         paymentStatus.textContent =
-                            "✅ Payment successful!";
+                            "✅ Payment successful! Your subscription is active.";
+
+                    }
+
+
+                    // ==================================
+                    // UNLOCK AFTER PAYMENT
+                    // ==================================
+
+                    unlockVoiceStudio();
+
+                    if (pricingSection) {
+
+                        pricingSection.style.display =
+                            "none";
+
+                    }
+
+
+                    if (status) {
+
+                        status.textContent =
+                            "✅ Subscription active. You can continue generating voices.";
 
                     }
 
                 },
 
-
-            // ==================================
-            // PAYMENT CANCELLED
-            // ==================================
 
             onCancel:
                 () => {
@@ -1085,10 +1524,6 @@ async function startPaystackPayment(
 
                 },
 
-
-            // ==================================
-            // PAYMENT ERROR
-            // ==================================
 
             onError:
                 (error) => {
