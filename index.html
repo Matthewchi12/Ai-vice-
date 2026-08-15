@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -17,6 +18,7 @@
     >
 
     <style>
+
         /* ==============================
            LOGIN SCREEN
         ============================== */
@@ -103,6 +105,7 @@
             font-size: 14px;
         }
 
+
         /* ==============================
            VOICE SELECT
         ============================== */
@@ -119,7 +122,107 @@
             box-sizing: border-box;
         }
 
-        /* Mobile */
+
+        /* ==============================
+           PRICING
+        ============================== */
+
+        .pricing {
+            width: 100%;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 25px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .pricing h2 {
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .pricing-description {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .pricing-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .price-card {
+            background: white;
+            border-radius: 18px;
+            padding: 28px 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+        }
+
+        .price-card h3 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        .price-card h4 {
+            font-size: 28px;
+            margin: 15px 0;
+        }
+
+        .price-card h4 span {
+            font-size: 14px;
+            color: #666;
+            font-weight: normal;
+        }
+
+        .price-card p {
+            color: #666;
+            line-height: 1.5;
+            min-height: 65px;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #111;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .pay-button:hover {
+            opacity: 0.9;
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+        }
+
+        .payment-status {
+            min-height: 25px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+
+        /* ==============================
+           MOBILE
+        ============================== */
+
+        @media (max-width: 700px) {
+
+            .pricing-container {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+
         @media (max-width: 480px) {
 
             #authScreen {
@@ -133,12 +236,20 @@
             .auth-card h1 {
                 font-size: 24px;
             }
+
+            .pricing {
+                padding: 15px;
+            }
+
         }
+
     </style>
 
 </head>
 
+
 <body>
+
 
     <!-- ==============================
          LOGIN / SIGN UP
@@ -148,13 +259,17 @@
 
         <div class="auth-card">
 
-            <h1>🎙️ Voice Over Studio</h1>
+            <h1>
+                🎙️ Voice Over Studio
+            </h1>
 
             <p class="auth-subtitle">
                 Create an account to start creating voice-overs.
             </p>
 
-            <h2>Welcome</h2>
+            <h2>
+                Welcome
+            </h2>
 
             <input
                 class="auth-input"
@@ -193,6 +308,7 @@
     </div>
 
 
+
     <!-- ==============================
          VOICE OVER STUDIO
     ============================== -->
@@ -203,9 +319,16 @@
         style="display: none;"
     >
 
+
+        <!-- ==============================
+             HEADER
+        ============================== -->
+
         <header>
 
-            <h1>🎙️ Voice Over Studio</h1>
+            <h1>
+                🎙️ Voice Over Studio
+            </h1>
 
             <p>
                 Turn your text into speech
@@ -214,11 +337,147 @@
         </header>
 
 
+
+        <!-- ==============================
+             SUBSCRIPTION PLANS
+        ============================== -->
+
+        <section class="pricing">
+
+            <h2>
+                Choose Your Plan
+            </h2>
+
+            <p class="pricing-description">
+                Choose a weekly plan to access AI voice generation.
+            </p>
+
+
+            <div class="pricing-container">
+
+
+                <!-- ==============================
+                     BASIC
+                ============================== -->
+
+                <div class="price-card">
+
+                    <h3>
+                        Basic
+                    </h3>
+
+                    <h4>
+                        ₦1,000
+                        <span>
+                            / week
+                        </span>
+                    </h4>
+
+                    <p>
+                        Basic access to AI voice generation
+                        with standard usage limits.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="basicPlanButton"
+                    >
+                        Subscribe to Basic
+                    </button>
+
+                </div>
+
+
+
+                <!-- ==============================
+                     STANDARD
+                ============================== -->
+
+                <div class="price-card">
+
+                    <h3>
+                        Standard
+                    </h3>
+
+                    <h4>
+                        ₦3,000
+                        <span>
+                            / week
+                        </span>
+                    </h4>
+
+                    <p>
+                        Enhanced access to AI voice generation
+                        with higher usage limits.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="standardPlanButton"
+                    >
+                        Subscribe to Standard
+                    </button>
+
+                </div>
+
+
+
+                <!-- ==============================
+                     PRO
+                ============================== -->
+
+                <div class="price-card">
+
+                    <h3>
+                        Pro
+                    </h3>
+
+                    <h4>
+                        ₦5,000
+                        <span>
+                            / week
+                        </span>
+                    </h4>
+
+                    <p>
+                        Premium access to AI voice generation
+                        with the highest usage limits
+                        and premium features.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="proPlanButton"
+                    >
+                        Subscribe to Pro
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+            <p
+                id="paymentStatus"
+                class="payment-status"
+            ></p>
+
+        </section>
+
+
+
+        <!-- ==============================
+             VOICE STUDIO
+        ============================== -->
+
         <main class="card">
+
 
             <label for="text">
                 Voice-over script
             </label>
+
 
             <textarea
                 id="text"
@@ -236,10 +495,14 @@ Let's get started."
 
             <div class="counter">
 
-                <span id="count">0</span>
+                <span id="count">
+                    0
+                </span>
+
                 characters
 
             </div>
+
 
 
             <!-- ==============================
@@ -249,6 +512,7 @@ Let's get started."
             <label for="voice">
                 🎙️ Select voice
             </label>
+
 
             <select id="voice">
 
@@ -279,11 +543,13 @@ Let's get started."
             </select>
 
 
+
             <!-- ==============================
                  CONTROLS
             ============================== -->
 
             <div class="controls">
+
 
                 <div class="control">
 
@@ -307,6 +573,7 @@ Let's get started."
                 </div>
 
 
+
                 <div class="control">
 
                     <label for="pitch">
@@ -328,7 +595,9 @@ Let's get started."
 
                 </div>
 
+
             </div>
+
 
 
             <!-- ==============================
@@ -356,6 +625,7 @@ Let's get started."
             </div>
 
 
+
             <!-- ==============================
                  DOWNLOAD
             ============================== -->
@@ -376,6 +646,7 @@ Let's get started."
             </div>
 
 
+
             <!-- ==============================
                  STATUS
             ============================== -->
@@ -387,7 +658,9 @@ Let's get started."
                 Ready.
             </div>
 
+
         </main>
+
 
 
         <!-- ==============================
@@ -417,7 +690,9 @@ Let's get started."
 
         </section>
 
+
     </div>
+
 
 
     <!-- ==============================
@@ -427,9 +702,22 @@ Let's get started."
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- YOUR JAVASCRIPT -->
+
+
+    <!-- ==============================
+         PAYSTACK
+    ============================== -->
+
+    <script src="https://js.paystack.co/v2/inline.js"></script>
+
+
+
+    <!-- ==============================
+         YOUR JAVASCRIPT
+    ============================== -->
 
     <script src="index.js"></script>
+
 
 </body>
 
