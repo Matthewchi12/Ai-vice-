@@ -107,6 +107,68 @@
 
 
         /* ==============================
+           SMALL SUBSCRIPTION BAR
+        ============================== */
+
+        .subscription-bar {
+            width: calc(100% - 30px);
+            max-width: 900px;
+            margin: 15px auto;
+            padding: 12px 16px;
+
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 15px;
+            box-sizing: border-box;
+
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .subscription-info {
+            text-align: left;
+        }
+
+        .subscription-info strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        #freeUsageText {
+            display: block;
+            margin-top: 4px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .small-subscription-button {
+            border: none;
+            background: #111;
+            color: white;
+
+            padding: 9px 14px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            white-space: nowrap;
+        }
+
+        .small-subscription-button:hover {
+            opacity: 0.9;
+        }
+
+
+        /* ==============================
            VOICE SELECT
         ============================== */
 
@@ -115,10 +177,14 @@
             padding: 14px;
             margin-top: 8px;
             margin-bottom: 20px;
+
             border: 1px solid #ddd;
             border-radius: 10px;
+
             background: white;
+
             font-size: 16px;
+
             box-sizing: border-box;
         }
 
@@ -130,10 +196,18 @@
         .pricing {
             width: 100%;
             max-width: 1100px;
+
             margin: 30px auto;
+
             padding: 25px;
+
             box-sizing: border-box;
+
             text-align: center;
+
+            background: #f8f8f8;
+
+            border-radius: 18px;
         }
 
         .pricing h2 {
@@ -148,15 +222,24 @@
 
         .pricing-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
             gap: 20px;
         }
 
         .price-card {
             background: white;
+
             border-radius: 18px;
+
             padding: 28px 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+
+            box-shadow:
+                0 8px 25px
+                rgba(0, 0, 0, 0.08);
+
             box-sizing: border-box;
         }
 
@@ -165,44 +248,71 @@
             font-size: 22px;
         }
 
-        /* PRICE */
+
+        /* ==============================
+           PRICE
+        ============================== */
+
         .plan-price {
             display: flex;
+
             align-items: baseline;
+
             justify-content: center;
+
             gap: 5px;
+
             margin: 15px 0;
         }
 
         .plan-price .amount {
             font-size: 30px;
+
             font-weight: 700;
+
             color: #111;
         }
 
         .plan-price .period {
             font-size: 14px;
+
             color: #666;
+
             font-weight: normal;
         }
 
         .price-card p {
             color: #666;
+
             line-height: 1.5;
+
             min-height: 65px;
         }
 
-        /* SUBSCRIBE BUTTON */
+
+        /* ==============================
+           PAY BUTTON
+        ============================== */
+
         .pay-button {
             width: 100%;
+
             padding: 14px;
+
             border: none;
+
             border-radius: 10px;
+
             background: #111;
+
             color: white;
+
             font-size: 15px;
+
             font-weight: 600;
+
             cursor: pointer;
+
             transition: 0.2s;
         }
 
@@ -216,8 +326,78 @@
 
         .payment-status {
             min-height: 25px;
+
             margin-top: 20px;
+
             font-weight: 600;
+        }
+
+
+        /* ==============================
+           FREE LIMIT MESSAGE
+        ============================== */
+
+        .limit-message {
+            display: none;
+
+            max-width: 600px;
+
+            margin: 20px auto;
+
+            padding: 18px;
+
+            background: #fff3cd;
+
+            border: 1px solid #ffe69c;
+
+            border-radius: 12px;
+
+            text-align: center;
+
+            box-sizing: border-box;
+        }
+
+        .limit-message strong {
+            display: block;
+
+            margin-bottom: 6px;
+        }
+
+        .limit-message p {
+            margin: 0 0 12px;
+
+            color: #555;
+
+            font-size: 14px;
+        }
+
+        .limit-subscribe-button {
+            border: none;
+
+            background: #111;
+
+            color: white;
+
+            padding: 11px 18px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: 600;
+        }
+
+
+        /* ==============================
+           LOCKED STUDIO
+        ============================== */
+
+        .studio-locked {
+            opacity: 0.6;
+
+            pointer-events: none;
+
+            position: relative;
         }
 
 
@@ -250,6 +430,26 @@
 
             .pricing {
                 padding: 15px;
+            }
+
+            .subscription-bar {
+                width: calc(100% - 20px);
+
+                padding: 11px 12px;
+            }
+
+            .subscription-info strong {
+                font-size: 13px;
+            }
+
+            #freeUsageText {
+                font-size: 11px;
+            }
+
+            .small-subscription-button {
+                padding: 8px 11px;
+
+                font-size: 12px;
             }
 
         }
@@ -320,7 +520,7 @@
 
 
     <!-- ==============================
-         VOICE OVER STUDIO
+         MAIN APP
     ============================== -->
 
     <div
@@ -330,7 +530,9 @@
     >
 
 
-        <!-- HEADER -->
+        <!-- ==============================
+             HEADER
+        ============================== -->
 
         <header>
 
@@ -346,145 +548,69 @@
 
 
         <!-- ==============================
-             SUBSCRIPTION PLANS
+             SMALL SUBSCRIPTION BAR
         ============================== -->
 
-        <section class="pricing">
+        <div class="subscription-bar">
 
-            <h2>
-                Choose Your Plan
-            </h2>
+            <div class="subscription-info">
 
-            <p class="pricing-description">
-                Choose a weekly plan to access AI voice generation.
-            </p>
+                <strong>
+                    Free Voice Generations
+                </strong>
 
-
-            <div class="pricing-container">
-
-
-                <!-- BASIC -->
-
-                <div class="price-card">
-
-                    <h3>
-                        Basic
-                    </h3>
-
-                    <div class="plan-price">
-
-                        <span class="amount">
-                            ₦1,000
-                        </span>
-
-                        <span class="period">
-                            / week
-                        </span>
-
-                    </div>
-
-                    <p>
-                        Basic access to AI voice generation
-                        with standard usage limits.
-                    </p>
-
-                    <button
-                        class="pay-button"
-                        id="basicPlanButton"
-                    >
-                        Subscribe to Basic
-                    </button>
-
-                </div>
-
-
-                <!-- STANDARD -->
-
-                <div class="price-card">
-
-                    <h3>
-                        Standard
-                    </h3>
-
-                    <div class="plan-price">
-
-                        <span class="amount">
-                            ₦3,000
-                        </span>
-
-                        <span class="period">
-                            / week
-                        </span>
-
-                    </div>
-
-                    <p>
-                        Enhanced access to AI voice generation
-                        with higher usage limits.
-                    </p>
-
-                    <button
-                        class="pay-button"
-                        id="standardPlanButton"
-                    >
-                        Subscribe to Standard
-                    </button>
-
-                </div>
-
-
-                <!-- PRO -->
-
-                <div class="price-card">
-
-                    <h3>
-                        Pro
-                    </h3>
-
-                    <div class="plan-price">
-
-                        <span class="amount">
-                            ₦5,000
-                        </span>
-
-                        <span class="period">
-                            / week
-                        </span>
-
-                    </div>
-
-                    <p>
-                        Premium access to AI voice generation
-                        with the highest usage limits
-                        and premium features.
-                    </p>
-
-                    <button
-                        class="pay-button"
-                        id="proPlanButton"
-                    >
-                        Subscribe to Pro
-                    </button>
-
-                </div>
-
+                <span id="freeUsageText">
+                    5 free generations available
+                </span>
 
             </div>
 
+            <button
+                id="subscriptionButton"
+                class="small-subscription-button"
+            >
+                View Plans
+            </button>
 
-            <p
-                id="paymentStatus"
-                class="payment-status"
-            ></p>
-
-        </section>
+        </div>
 
 
         <!-- ==============================
-             VOICE STUDIO
+             FREE LIMIT MESSAGE
         ============================== -->
 
-        <main class="card">
+        <div
+            id="limitMessage"
+            class="limit-message"
+        >
+
+            <strong>
+                🎙️ Free generations used
+            </strong>
+
+            <p>
+                You have used your 5 free voice generations.
+                Subscribe to continue creating voices.
+            </p>
+
+            <button
+                id="limitSubscribeButton"
+                class="limit-subscribe-button"
+            >
+                View Subscription Plans
+            </button>
+
+        </div>
+
+
+        <!-- ==============================
+             VOICE OVER STUDIO
+        ============================== -->
+
+        <main
+            class="card"
+            id="voiceStudio"
+        >
 
             <label for="text">
                 Voice-over script
@@ -515,7 +641,9 @@ Let's get started."
             </div>
 
 
-            <!-- VOICE -->
+            <!-- ==============================
+                 VOICE SELECTION
+            ============================== -->
 
             <label for="voice">
                 🎙️ Select voice
@@ -550,7 +678,9 @@ Let's get started."
             </select>
 
 
-            <!-- CONTROLS -->
+            <!-- ==============================
+                 CONTROLS
+            ============================== -->
 
             <div class="controls">
 
@@ -600,7 +730,9 @@ Let's get started."
             </div>
 
 
-            <!-- AUDIO BUTTONS -->
+            <!-- ==============================
+                 AUDIO BUTTONS
+            ============================== -->
 
             <div class="buttons">
 
@@ -623,7 +755,9 @@ Let's get started."
             </div>
 
 
-            <!-- DOWNLOAD -->
+            <!-- ==============================
+                 DOWNLOAD
+            ============================== -->
 
             <div class="download-area">
 
@@ -641,7 +775,9 @@ Let's get started."
             </div>
 
 
-            <!-- STATUS -->
+            <!-- ==============================
+                 STATUS
+            ============================== -->
 
             <div
                 id="status"
@@ -650,10 +786,13 @@ Let's get started."
                 Ready.
             </div>
 
+
         </main>
 
 
-        <!-- TIPS -->
+        <!-- ==============================
+             TIPS
+        ============================== -->
 
         <section class="tips">
 
@@ -671,10 +810,159 @@ Let's get started."
 
             <p>
                 Example:
+
                 <strong>
                     "Matthew, welcome to the channel."
                 </strong>
+
             </p>
+
+        </section>
+
+
+        <!-- ==============================
+             SUBSCRIPTION PLANS
+             HIDDEN UNTIL USER CLICKS
+             VIEW PLANS
+        ============================== -->
+
+        <section
+            class="pricing"
+            id="pricing"
+            style="display: none;"
+        >
+
+            <h2>
+                Choose Your Plan
+            </h2>
+
+            <p class="pricing-description">
+                Subscribe to continue creating AI voice-overs.
+            </p>
+
+
+            <div class="pricing-container">
+
+
+                <!-- ==============================
+                     BASIC
+                ============================== -->
+
+                <div class="price-card">
+
+                    <h3>
+                        Basic
+                    </h3>
+
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦1,000
+                        </span>
+
+                        <span class="period">
+                            / week
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Basic access to AI voice generation
+                        with standard usage limits.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="basicPlanButton"
+                    >
+                        Subscribe to Basic
+                    </button>
+
+                </div>
+
+
+                <!-- ==============================
+                     STANDARD
+                ============================== -->
+
+                <div class="price-card">
+
+                    <h3>
+                        Standard
+                    </h3>
+
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦3,000
+                        </span>
+
+                        <span class="period">
+                            / week
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Enhanced access to AI voice generation
+                        with higher usage limits.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="standardPlanButton"
+                    >
+                        Subscribe to Standard
+                    </button>
+
+                </div>
+
+
+                <!-- ==============================
+                     PRO
+                ============================== -->
+
+                <div class="price-card">
+
+                    <h3>
+                        Pro
+                    </h3>
+
+                    <div class="plan-price">
+
+                        <span class="amount">
+                            ₦5,000
+                        </span>
+
+                        <span class="period">
+                            / week
+                        </span>
+
+                    </div>
+
+                    <p>
+                        Premium access to AI voice generation
+                        with the highest usage limits
+                        and premium features.
+                    </p>
+
+                    <button
+                        class="pay-button"
+                        id="proPlanButton"
+                    >
+                        Subscribe to Pro
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+            <p
+                id="paymentStatus"
+                class="payment-status"
+            ></p>
 
         </section>
 
@@ -697,7 +985,7 @@ Let's get started."
 
 
     <!-- ==============================
-         JAVASCRIPT
+         YOUR JAVASCRIPT
     ============================== -->
 
     <script src="index.js"></script>
