@@ -1,131 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Voice Over Studio - Premium AI Voice</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Voice Over Studio - 5 Free Then Login & Pay</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:#0a0a0f;color:#fff;overflow-x:hidden}
-h1,h2,h3{font-family:'Space Grotesk',sans-serif}
-.glow{position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:0.15;pointer-events:none}
-.glow1{background:#7c3aed;top:-200px;left:-200px}
-.glow2{background:#06b6d4;bottom:-200px;right:-200px}
-nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);background:rgba(10,10,15,0.8);border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
-.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
-.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#7c3aed,#06b6d4);border-radius:10px;display:grid;place-items:center;font-size:18px}
-.nav-right{display:flex;gap:12px;align-items:center}
-.pill{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:20px;font-size:12px;display:flex;gap:6px;align-items:center}
-.btn{border:0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;font-size:14px;transition:0.2s}
-.btn-primary{background:#fff;color:#000}
-.btn-ghost{background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.1)}
-#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-card{width:100%;max-width:420px;background:rgba(20,20,30,0.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);padding:32px;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4);text-align:center;position:relative;overflow:hidden}
-.auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#7c3aed,transparent)}
-.auth-graphic{width:80px;height:80px;margin:0 auto 20px;background:linear-gradient(135deg,#7c3aed,#06b6d4);border-radius:20px;display:grid;place-items:center;font-size:36px;box-shadow:0 10px 30px rgba(124,58,237,0.3)}
-.auth-input{width:100%;padding:14px 16px;margin-bottom:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;outline:none}
-.auth-btn{width:100%;padding:14px;border:0;border-radius:12px;cursor:pointer;font-weight:600;margin-top:8px}
-.auth-btn.login{background:#fff;color:#000}
-.auth-btn.signup{background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.1)}
-#app{display:none;max-width:1200px;margin:0 auto;padding:0 20px 60px}
-.hero{text-align:center;padding:40px 20px 20px}
-.hero h1{font-size:48px;font-weight:700;letter-spacing:-1px;background:linear-gradient(180deg,#fff,#999);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{color:#888;margin-top:10px}
-.hero-badges{display:flex;gap:10px;justify-content:center;margin-top:16px}
-.badge{padding:6px 12px;border-radius:20px;font-size:11px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);color:#a78bfa}
-.subscription-bar{max-width:900px;margin:20px auto;background:linear-gradient(135deg,rgba(20,20,30,0.9),rgba(30,20,50,0.6));border:1px solid rgba(124,58,237,0.2);border-radius:16px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
-.free-indicator{width:100%;max-width:200px;height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;margin-top:6px}
-.free-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#06b6d4);transition:0.5s}
-.limit-message{display:none;max-width:700px;margin:20px auto;padding:24px;background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(245,158,11,0.05));border:1px solid rgba(251,191,36,0.2);border-radius:16px;text-align:center}
-.card{max-width:900px;margin:20px auto;background:rgba(18,18,28,0.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:28px}
-label{font-weight:600;font-size:13px;color:#aaa;margin-bottom:8px;display:block;text-transform:uppercase}
-textarea{width:100%;min-height:160px;padding:16px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;outline:none;resize:vertical}
-.voice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
-.voice-card{padding:14px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);border-radius:12px;cursor:pointer;text-align:center}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#0a0a0f;color:#fff}
+#authScreen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:radial-gradient(600px at 20% 20%,rgba(124,58,237,0.15),transparent)}
+.auth-card{width:100%;max-width:400px;background:#15151f;border:1px solid rgba(255,255,255,0.08);padding:28px;border-radius:20px;text-align:center}
+.auth-input{width:100%;padding:12px;margin-bottom:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;outline:none}
+.auth-btn{width:100%;padding:12px;border:0;border-radius:10px;cursor:pointer;font-weight:600;margin-top:8px}
+.login{background:#fff;color:#000}.signup{background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.1)}
+#app{display:block;max-width:900px;margin:0 auto;padding:20px}
+.hero{text-align:center;padding:20px}
+.hero h1{font-family:Space Grotesk,sans-serif;font-size:36px}
+.pill{display:inline-flex;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);padding:6px 12px;border-radius:20px;font-size:12px;color:#a78bfa}
+.card{margin-top:16px;background:rgba(18,18,28,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px}
+textarea{width:100%;min-height:130px;padding:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;outline:none}
+.voice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.voice-card{padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;cursor:pointer;text-align:center;font-size:12px;background:rgba(255,255,255,0.02)}
 .voice-card.active{border-color:#7c3aed;background:rgba(124,58,237,0.15)}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
-.waveform{display:flex;align-items:center;justify-content:center;gap:3px;height:60px;margin:20px 0;background:rgba(0,0,0,0.2);border-radius:12px}
-.bar{width:4px;background:linear-gradient(180deg,#7c3aed,#06b6d4);border-radius:4px;animation:wave 1s ease-in-out infinite}
-@keyframes wave{0%,100%{height:10px}50%{height:40px}}
-.buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.buttons button{padding:14px;border:0;border-radius:12px;background:rgba(255,255,255,0.06);color:#fff;cursor:pointer;font-weight:600}
-.buttons button.primary{background:linear-gradient(135deg,#7c3aed,#06b6d4)}
-#download{padding:14px 24px;border:0;border-radius:12px;background:#fff;color:#000;cursor:pointer;font-weight:700;width:100%}
-.status{margin-top:16px;padding:12px;background:rgba(0,0,0,0.3);border-radius:10px;text-align:center;font-size:13px;color:#aaa}
-.pricing{display:none;max-width:1100px;margin:30px auto}
-.pricing-container{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.price-card{background:rgba(18,18,28,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:24px}
-.amount{font-size:32px;font-weight:700}
-@media(max-width:700px){.voice-grid{grid-template-columns:repeat(2,1fr)}.pricing-container{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.buttons{grid-template-columns:1fr 1fr}}
+.buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.buttons button{padding:12px;border:0;border-radius:10px;background:rgba(255,255,255,0.06);color:#fff;cursor:pointer;font-weight:600}
+.buttons button.primary{background:#fff;color:#000}
+#status{margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:8px;font-size:12px;text-align:center;color:#888}
+#pricingModal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:20px}
+.pricing-box{width:100%;max-width:900px;background:#15151f;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.price-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;text-align:center}
+.price-card.popular{border-color:#7c3aed;background:rgba(124,58,237,0.1)}
+.amount{font-size:28px;font-weight:700;margin:8px 0}
+.pay-btn{width:100%;padding:12px;margin-top:12px;border:0;border-radius:10px;background:#fff;color:#000;cursor:pointer;font-weight:700}
+@media(max-width:700px){.voice-grid{grid-template-columns:repeat(2,1fr)}.pricing-grid{grid-template-columns:1fr}.buttons{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-<div class="glow glow1"></div><div class="glow glow2"></div>
 
 <div id="authScreen">
   <div class="auth-card">
-    <div class="auth-graphic">🎙️</div>
-    <h1>Voice Over Studio</h1>
-    <p style="color:#888;font-size:13px;margin-bottom:24px">Premium AI voice • 5 free uses</p>
-    <h2 style="font-size:18px;margin-bottom:16px">Welcome Back</h2>
+    <div style="font-size:40px">🔒</div>
+    <h2 style="margin:12px 0 6px">Free Limit Reached</h2>
+    <p style="color:#888;font-size:12px;margin-bottom:16px" id="authReason">You've used your 5 free generations as guest.<br>Login to continue, then subscribe to generate more.</p>
     <input id="email" class="auth-input" type="email" placeholder="Email">
-    <input id="password" class="auth-input" type="password" placeholder="Password">
+    <input id="password" class="auth-input" type="password" placeholder="Password (min 6 chars)">
     <button id="loginButton" class="auth-btn login">Login</button>
     <button id="signupButton" class="auth-btn signup">Create Account</button>
-    <p id="authStatus" style="min-height:20px;margin-top:12px;font-size:13px;color:#a3ff12"></p>
+    <p id="authStatus" style="margin-top:10px;font-size:12px;color:#a3ff12"></p>
+  </div>
+</div>
+
+<div id="pricingModal">
+  <div class="pricing-box">
+    <h2 style="text-align:center">You've Used Your 5 Free Generations</h2>
+    <p style="text-align:center;color:#888;font-size:13px;margin-top:6px">Subscribe to continue generating unlimited voice-overs</p>
+    <div class="pricing-grid">
+      <div class="price-card"><h3>Basic</h3><div class="amount">₦2,000<span style="font-size:14px;color:#888">/week</span></div><div style="color:#888;font-size:12px">50 generations/week • All voices</div><button class="pay-btn" data-plan="basic" data-code="PLN_77evy40w37571js">Pay with Paystack</button></div>
+      <div class="price-card popular"><div style="background:#7c3aed;color:#fff;font-size:10px;padding:3px 8px;border-radius:10px;display:inline-block">POPULAR</div><h3>Standard</h3><div class="amount">₦3,000<span style="font-size:14px;color:#888">/week</span></div><div style="color:#888;font-size:12px">150 generations/week • Priority</div><button class="pay-btn" data-plan="standard" data-code="PLN_2klvnxb9r1exmhi">Pay with Paystack</button></div>
+      <div class="price-card"><h3>Pro</h3><div class="amount">₦5,000<span style="font-size:14px;color:#888">/week</span></div><div style="color:#888;font-size:12px">Unlimited • Commercial license</div><button class="pay-btn" data-plan="pro" data-code="PLN_g3m0doyhzmgp4y7">Pay with Paystack</button></div>
+    </div>
+    <p id="paymentStatus" style="text-align:center;margin-top:16px;font-weight:700;font-size:13px"></p>
+    <button onclick="document.getElementById('pricingModal').style.display='none'" style="display:block;margin:16px auto 0;background:none;border:0;color:#666;cursor:pointer;font-size:12px">Close (you can't generate until you pay)</button>
   </div>
 </div>
 
 <div id="app">
-  <nav>
-    <div class="logo"><div class="logo-icon">🎙️</div> Voice Over Studio</div>
-    <div class="nav-right">
-      <div class="pill">🎧 <span id="freeUsageText">5 free left</span></div>
-      <button id="subscriptionButton" class="btn btn-ghost">Plans</button>
-      <button id="logoutBtn" class="btn btn-ghost" style="display:none">Logout</button>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="font-weight:700">🎙️ Voice Over Studio</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="pill" id="freePill"><span id="freeText">5 free left (Guest)</span></div>
+      <button id="logoutBtn" style="display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px">Logout</button>
     </div>
-  </nav>
+  </div>
 
   <div class="hero">
-    <h1>Turn Text<br>Into Human Speech</h1>
-    <p>Natural Nigerian, British & American voices</p>
-    <div class="hero-badges"><span class="badge">✨ Gemini 2.5 TTS</span><span class="badge">🎧 6 Voices</span></div>
+    <h1>5 FREE Uses<br>No Login Needed</h1>
+    <p style="color:#888;font-size:13px;margin-top:6px">Generate 5 voice-overs as guest • Login only after free • Pay only after free exhausted</p>
   </div>
 
-  <div class="subscription-bar">
-    <div><strong id="subTitle">Free Trial</strong><div style="font-size:12px;color:#888"><span id="freeUsageText2">5 free</span></div><div class="free-indicator"><div class="free-fill" id="freeFill" style="width:100%"></div></div></div>
-    <button class="btn btn-primary" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Upgrade</button>
-  </div>
-
-  <div id="limitMessage" class="limit-message">
-    <h3>🔒 Free Limit Reached</h3>
-    <p style="color:#888;margin:8px 0 16px">You've used 5 free. Subscribe to continue.</p>
-    <button id="limitSubscribeButton" class="btn btn-primary">View Plans - ₦2,000/week</button>
-  </div>
-
-  <main class="card">
-    <label>Your Script</label>
+  <div class="card">
+    <label style="font-size:11px;color:#888">YOUR SCRIPT</label>
     <textarea id="text" placeholder="Type your script here..."></textarea>
-    <div style="color:#666;font-size:12px;margin:8px 0 20px;text-align:right"><span id="count">0</span> chars • ~ <span id="readTime">0s</span></div>
+    <div style="text-align:right;color:#666;font-size:11px;margin-top:6px"><span id="count">0</span> chars</div>
 
-    <label>🎙️ Choose Voice</label>
+    <label style="font-size:11px;color:#888;margin-top:12px;display:block">VOICE</label>
     <div class="voice-grid" id="voiceGrid">
-      <div class="voice-card active" data-value="nigeriaMale"><div style="font-size:20px">🇳🇬</div><div style="font-size:12px;font-weight:600">Nigerian Male</div><div style="font-size:10px;color:#888">Warm</div></div>
-      <div class="voice-card" data-value="nigeriaFemale"><div style="font-size:20px">🇳🇬</div><div style="font-size:12px;font-weight:600">Nigerian Female</div><div style="font-size:10px;color:#888">Clear</div></div>
-      <div class="voice-card" data-value="ukMale"><div style="font-size:20px">🇬🇧</div><div style="font-size:12px;font-weight:600">UK Male</div><div style="font-size:10px;color:#888">Pro</div></div>
-      <div class="voice-card" data-value="ukFemale"><div style="font-size:20px">🇬🇧</div><div style="font-size:12px;font-weight:600">UK Female</div><div style="font-size:10px;color:#888">Elegant</div></div>
-      <div class="voice-card" data-value="usMale"><div style="font-size:20px">🇺🇸</div><div style="font-size:12px;font-weight:600">US Male</div><div style="font-size:10px;color:#888">Friendly</div></div>
-      <div class="voice-card" data-value="usFemale"><div style="font-size:20px">🇺🇸</div><div style="font-size:12px;font-weight:600">US Female</div><div style="font-size:10px;color:#888">Natural</div></div>
+      <div class="voice-card active" data-value="nigeriaMale">🇳🇬<br>NG Male</div>
+      <div class="voice-card" data-value="nigeriaFemale">🇳🇬<br>NG Female</div>
+      <div class="voice-card" data-value="ukMale">🇬🇧<br>UK Male</div>
+      <div class="voice-card" data-value="ukFemale">🇬🇧<br>UK Female</div>
+      <div class="voice-card" data-value="usMale">🇺🇸<br>US Male</div>
+      <div class="voice-card" data-value="usFemale">🇺🇸<br>US Female</div>
     </div>
     <select id="voice" style="display:none"><option value="nigeriaMale">NG Male</option><option value="nigeriaFemale">NG Female</option><option value="ukMale">UK Male</option><option value="ukFemale">UK Female</option><option value="usMale">US Male</option><option value="usFemale">US Female</option></select>
-
-    <div class="controls">
-      <div style="background:rgba(0,0,0,0.2);padding:14px;border-radius:12px"><label>Speed <span id="rateValue">1.0</span></label><input id="rate" type="range" min="0.5" max="2" value="1" step="0.1"></div>
-      <div style="background:rgba(0,0,0,0.2);padding:14px;border-radius:12px"><label>Pitch <span id="pitchValue">1.0</span></label><input id="pitch" type="range" min="0" max="2" value="1" step="0.1"></div>
-    </div>
-
-    <div class="waveform" id="waveform"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
 
     <div class="buttons">
       <button id="play" class="primary">▶ Play</button>
@@ -133,28 +99,120 @@ textarea{width:100%;min-height:160px;padding:16px;background:rgba(0,0,0,0.3);bor
       <button id="resume">▶ Resume</button>
       <button id="stop">⏹ Stop</button>
     </div>
-
-    <div style="margin-top:16px;text-align:center">
-      <button id="download">⬇️ Download WAV</button>
-      <p style="color:#666;font-size:11px;margin-top:8px" id="downloadMessage">Generate first, then download</p>
-    </div>
-
-    <div id="status" class="status">Ready • 5 free uses as guest • No login needed</div>
-  </main>
-
-  <section id="pricing" class="pricing">
-    <div style="text-align:center;margin-bottom:30px"><h2>Simple Pricing</h2><p style="color:#888">After your 5 free</p></div>
-    <div class="pricing-container">
-      <div class="price-card"><h3>Basic</h3><div><span class="amount">₦2,000</span><span style="color:#888">/week</span></div><p style="color:#888;font-size:13px;margin:12px 0">50 generations/week</p><button id="basicPlanButton" style="width:100%;padding:14px;border:0;border-radius:12px;background:#fff;color:#000;cursor:pointer;font-weight:700">Subscribe Basic</button></div>
-      <div class="price-card" style="border-color:#7c3aed"><h3>Standard</h3><div><span class="amount">₦3,000</span><span style="color:#888">/week</span></div><p style="color:#888;font-size:13px;margin:12px 0">150 generations/week • Popular</p><button id="standardPlanButton" style="width:100%;padding:14px;border:0;border-radius:12px;background:#fff;color:#000;cursor:pointer;font-weight:700">Subscribe Standard</button></div>
-      <div class="price-card"><h3>Pro</h3><div><span class="amount">₦5,000</span><span style="color:#888">/week</span></div><p style="color:#888;font-size:13px;margin:12px 0">Unlimited</p><button id="proPlanButton" style="width:100%;padding:14px;border:0;border-radius:12px;background:#fff;color:#000;cursor:pointer;font-weight:700">Subscribe Pro</button></div>
-    </div>
-    <p id="paymentStatus" style="text-align:center;margin-top:20px;font-weight:700"></p>
-  </section>
+    <button id="download" style="width:100%;margin-top:10px;padding:12px;border:0;border-radius:10px;background:rgba(255,255,255,0.06);color:#fff;cursor:pointer">⬇️ Download WAV</button>
+    <div id="status">Ready • Guest mode • 5 free, no login • After 5 free: login → then pay to continue</div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://js.paystack.co/v2/inline.js"></script>
-<script src="index.js"></script>
+<script>
+const SUPABASE_URL="https://ihoxjwqlvuskkqrfowbr.supabase.co";
+const SUPABASE_KEY="sb_publishable_TAesDbD1gUQ5p9IoYhZWJw_tBHL5g4F";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const API_BASE="https://ai-voice-backend-pl9h.onrender.com";
+const API_URL=`${API_BASE}/tts`;
+const FREE=5;
+const GUEST_KEY="voiceover_guest_uses";
+let guestUses=parseInt(localStorage.getItem(GUEST_KEY)||"0");
+let freeUses=0, isSubscribed=false;
+let currentAudio=null, currentAudioURL=null;
+const authScreen=document.getElementById("authScreen");
+const appDiv=document.getElementById("app");
+const pricingModal=document.getElementById("pricingModal");
+const freeText=document.getElementById("freeText");
+function updateFreeUI(){
+  const remaining=Math.max(0,FREE-(isLoggedIn?freeUses:guestUses));
+  if(isLoggedIn){ freeText.textContent=isSubscribed?"Pro Active ✓ Unlimited":`${remaining} free left`; }
+  else { freeText.textContent=`${remaining} free left (Guest)`; }
+  document.getElementById("count").textContent=document.getElementById("text").value.length;
+}
+let isLoggedIn=false;
+async function check(){
+  const {data}=await supabaseClient.auth.getSession();
+  isLoggedIn=!!data?.session;
+  document.getElementById("logoutBtn").style.display=isLoggedIn?"block":"none";
+  if(isLoggedIn){
+    try{
+      const res=await fetch(`${API_BASE}/subscription`,{headers:{Authorization:`Bearer ${data.session.access_token}`}});
+      const j=await res.json(); freeUses=j.free_uses||0; isSubscribed=j.active;
+    }catch(e){ freeUses=0; isSubscribed=false; }
+    authScreen.style.display="none";
+    if(!isSubscribed && freeUses>=FREE){ pricingModal.style.display="flex"; appDiv.style.display="block"; }
+    else { pricingModal.style.display="none"; appDiv.style.display="block"; }
+    updateFreeUI(); return;
+  }
+  if(guestUses < FREE){ authScreen.style.display="none"; pricingModal.style.display="none"; appDiv.style.display="block"; }
+  else { authScreen.style.display="flex"; appDiv.style.display="none"; }
+  updateFreeUI();
+}
+document.getElementById("voiceGrid").addEventListener("click",e=>{
+  const c=e.target.closest(".voice-card"); if(!c) return;
+  document.querySelectorAll(".voice-card").forEach(x=>x.classList.remove("active"));
+  c.classList.add("active"); document.getElementById("voice").value=c.dataset.value;
+});
+document.getElementById("text").addEventListener("input",updateFreeUI);
+const voiceMap={nigeriaMale:"Charon",nigeriaFemale:"Aoede",ukMale:"Charon",ukFemale:"Aoede",usMale:"Puck",usFemale:"Kore"};
+async function genAudio(){
+  const txt=document.getElementById("text").value.trim();
+  if(!txt){ document.getElementById("status").textContent="Enter text"; return null; }
+  const {data}=await supabaseClient.auth.getSession();
+  const logged=!!data?.session;
+  if(!logged && guestUses>=FREE){ authScreen.style.display="flex"; appDiv.style.display="none"; return null; }
+  if(logged && !isSubscribed && freeUses>=FREE){ pricingModal.style.display="flex"; return null; }
+  document.getElementById("status").textContent="⏳ Generating...";
+  const sel=document.getElementById("voice").value;
+  const voice=voiceMap[sel];
+  const script=`Speak naturally in ${sel.includes("nigeria")?"Nigerian":sel.includes("uk")?"British":"American"} English. ${txt}`;
+  try{
+    const headers={"Content-Type":"application/json"};
+    if(logged) headers["Authorization"]=`Bearer ${data.session.access_token}`;
+    const res=await fetch(API_URL,{method:"POST",headers,body:JSON.stringify({text:script,voice})});
+    if(res.status===402){
+      if(logged){ pricingModal.style.display="flex"; }
+      else { authScreen.style.display="flex"; appDiv.style.display="none"; }
+      return null;
+    }
+    if(!res.ok){ const t=await res.text(); throw new Error(t); }
+    const blob=await res.blob();
+    if(currentAudioURL) URL.revokeObjectURL(currentAudioURL);
+    currentAudioURL=URL.createObjectURL(blob);
+    currentAudio=new Audio(currentAudioURL);
+    if(!logged){ guestUses++; localStorage.setItem(GUEST_KEY,guestUses.toString()); updateFreeUI(); if(guestUses>=FREE) setTimeout(()=>check(),1500); }
+    else { try{ const r=await fetch(`${API_BASE}/subscription`,{headers:{Authorization:`Bearer ${data.session.access_token}`}}); const j=await r.json(); freeUses=j.free_uses||0; isSubscribed=j.active; updateFreeUI(); if(!isSubscribed && freeUses>=FREE) pricingModal.style.display="flex"; }catch(e){} }
+    document.getElementById("status").textContent="✅ Generated!";
+    return true;
+  }catch(e){ document.getElementById("status").textContent="❌ "+e.message; return null; }
+}
+document.getElementById("play").addEventListener("click",async()=>{ if(!currentAudio){ const g=await genAudio(); if(!g) return; } currentAudio.currentTime=0; await currentAudio.play(); });
+document.getElementById("pause").addEventListener("click",()=>{ if(currentAudio) currentAudio.pause(); });
+document.getElementById("resume").addEventListener("click",async()=>{ if(currentAudio) await currentAudio.play(); });
+document.getElementById("stop").addEventListener("click",()=>{ if(currentAudio){currentAudio.pause(); currentAudio.currentTime=0;}});
+document.getElementById("download").addEventListener("click",async()=>{ if(!currentAudio){ const g=await genAudio(); if(!g) return; } const a=document.createElement("a"); a.href=currentAudioURL; a.download="voice.wav"; a.click(); });
+document.getElementById("loginButton").addEventListener("click",async()=>{ const email=document.getElementById("email").value.trim(); const pass=document.getElementById("password").value; const {error}=await supabaseClient.auth.signInWithPassword({email,password}); document.getElementById("authStatus").textContent=error?error.message:"Logged in!"; if(!error) check(); });
+document.getElementById("signupButton").addEventListener("click",async()=>{ const email=document.getElementById("email").value.trim(); const pass=document.getElementById("password").value; const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:"https://matthewchi12.github.io/Ai-vice-/"}}); document.getElementById("authStatus").textContent=error?error.message:"Check email"; if(data?.session) check(); });
+document.getElementById("logoutBtn").addEventListener("click",async()=>{ await supabaseClient.auth.signOut(); localStorage.setItem(GUEST_KEY,"0"); guestUses=0; check(); });
+const PAYSTACK_KEY="pk_test_238b10087d6e116590057be181d1f6af5849d32e";
+async function startPay(planCode, planName){
+  const {data}=await supabaseClient.auth.getUser();
+  if(!data?.user){ document.getElementById("paymentStatus").textContent="Login first"; return; }
+  const pop=new PaystackPop();
+  pop.newTransaction({
+    key:PAYSTACK_KEY, email:data.user.email, planCode:planCode,
+    onSuccess: async (tx)=>{
+      document.getElementById("paymentStatus").textContent="Verifying...";
+      try{
+        const {data:ses}=await supabaseClient.auth.getSession();
+        const res=await fetch(`${API_BASE}/verify-payment`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${ses.session.access_token}`},body:JSON.stringify({reference:tx.reference,plan:planName})});
+        const j=await res.json(); if(!res.ok) throw new Error(j.error);
+        document.getElementById("paymentStatus").textContent="✅ Subscribed!"; isSubscribed=true; pricingModal.style.display="none"; check();
+      }catch(e){ document.getElementById("paymentStatus").textContent="❌ "+e.message; }
+    }
+  });
+}
+document.querySelectorAll(".pay-btn").forEach(b=>b.addEventListener("click",()=>startPay(b.dataset.code,b.dataset.plan)));
+supabaseClient.auth.onAuthStateChange(()=>check());
+check(); updateFreeUI();
+</script>
 </body>
 </html>
