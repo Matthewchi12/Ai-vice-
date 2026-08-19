@@ -8,7 +8,7 @@ async function checkLogin() {
     showAppAsGuest();
     return;
   }
-  // Only after 5 uses, force login
+  
   showLoginWithMessage("You've used 5 free. Please login.");
 }
 
