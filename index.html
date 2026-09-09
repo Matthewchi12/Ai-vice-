@@ -136,7 +136,6 @@ const SUPABASE_KEY = "sb_publishable_TAesDbD1gUQ5p9IoYhZWJw_tBHL5g4F";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const API_BASE = "https://ai-voice-backend-pl9h.onrender.com";
 const API_URL = `${API_BASE}/tts`;
-const MP3_API_URL = `${API_BASE}/tts`;
 const FREE = 5;
 const GUEST_KEY = "voiceover_guest_uses";
 let guestUses = parseInt(localStorage.getItem(GUEST_KEY) || "0", 10);
@@ -151,12 +150,14 @@ const appDiv = document.getElementById("app");
 const pricingModal = document.getElementById("pricingModal");
 const freeText = document.getElementById("freeText");
 const status = document.getElementById("status");
+
 function updateFreeUI(){
   const remaining = Math.max(0, FREE - (isLoggedIn? freeUses : guestUses));
   if(isLoggedIn){ freeText.textContent = isSubscribed? "Pro Active ✓ Unlimited" : `${remaining} free left`; }
   else{ freeText.textContent = `${remaining} free left (Guest)`; }
   document.getElementById("count").textContent = document.getElementById("text").value.length;
 }
+
 async function check(){
   try{
     const {data} = await supabaseClient.auth.getSession();
@@ -180,6 +181,7 @@ async function check(){
     updateFreeUI();
   }catch(e){ console.error("Check error:", e); }
 }
+
 document.getElementById("voiceGrid").addEventListener("click", e => {
   const c = e.target.closest(".voice-card");
   if(!c) return;
@@ -189,6 +191,7 @@ document.getElementById("voiceGrid").addEventListener("click", e => {
 });
 document.getElementById("text").addEventListener("input", updateFreeUI);
 const voiceMap = { nigeriaMale: "Charon", nigeriaFemale: "Aoede", ukMale: "Charon", ukFemale: "Aoede", usMale: "Puck", usFemale: "Kore" };
+
 async function generateRequest(endpoint){
   const txt = document.getElementById("text").value.trim();
   if(!txt){ status.textContent = "Enter text"; return null; }
@@ -229,6 +232,7 @@ async function generateRequest(endpoint){
     return null;
   }
 }
+
 async function genAudio(){
   const result = await generateRequest(API_URL);
   if(!result) return null;
@@ -241,6 +245,7 @@ async function genAudio(){
   if(result.logged &&!isSubscribed && freeUses >= FREE){ setTimeout(() => { pricingModal.style.display = "flex"; }, 1500); }
   return true;
 }
+
 document.getElementById("play").addEventListener("click", async () => {
   if(!currentAudio){ const generated = await genAudio(); if(!generated) return; }
   currentAudio.currentTime = 0;
@@ -249,30 +254,31 @@ document.getElementById("play").addEventListener("click", async () => {
 document.getElementById("pause").addEventListener("click", () => { if(currentAudio){ currentAudio.pause(); } });
 document.getElementById("resume").addEventListener("click", async () => { if(currentAudio){ try{ await currentAudio.play(); }catch(e){ status.textContent = "❌ Unable to resume audio"; } } });
 document.getElementById("stop").addEventListener("click", () => { if(currentAudio){ currentAudio.pause(); currentAudio.currentTime = 0; } });
-document.getElementById("download").addEventListener("click", async () => {
-  if(!currentWavBlob){ const generated = await genAudio(); if(!generated) return; }
-  const wavURL = URL.createObjectURL(currentWavBlob);
+
+// --- FIXED FAST DOWNLOAD - BOTH BUTTONS DOWNLOAD WAV ---
+function downloadFast(filename){
+  if(!currentWavBlob || !currentAudioURL){
+    genAudio();
+    return;
+  }
   const a = document.createElement("a");
-  a.href = wavURL;
-  a.download = currentWavBlob.type.includes("mpeg")? "voice.mp3" : "voice.wav";
+  a.href = currentAudioURL; // reuse, don't create new URL
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(wavURL), 10000);
-  status.textContent = "✅ Downloaded directly!";
+  status.textContent = "✅ Downloaded!";
+}
+
+document.getElementById("download").addEventListener("click", () => {
+  downloadFast("voice.wav");
 });
-document.getElementById("downloadMp3").addEventListener("click", async () => {
-  if(!currentWavBlob){ const generated = await genAudio(); if(!generated) return; }
-  const mp3URL = URL.createObjectURL(currentWavBlob);
-  const a = document.createElement("a");
-  a.href = mp3URL;
-  a.download = "voice.mp3";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(mp3URL), 10000);
-  status.textContent = "✅ MP3 downloaded directly!";
+
+document.getElementById("downloadMp3").addEventListener("click", () => {
+  // MP3 BUTTON RETAINED BUT DOWNLOADS WAV AS YOU ASKED
+  downloadFast("voice.wav");
 });
+
 document.getElementById("loginButton").addEventListener("click", async () => {
   const email = document.getElementById("email").value.trim();
   const pass = document.getElementById("password").value;
@@ -288,49 +294,4 @@ document.getElementById("signupButton").addEventListener("click", async () => {
   const pass = document.getElementById("password").value;
   if(!email){ document.getElementById("authStatus").textContent = "Enter your email"; return; }
   if(pass.length < 6){ document.getElementById("authStatus").textContent = "Password must be at least 6 characters"; return; }
-  document.getElementById("authStatus").textContent = "Creating account...";
-  const {data,error} = await supabaseClient.auth.signUp({ email:email, password:pass, options:{ emailRedirectTo: "https://matthewchi12.github.io/Ai-vice-/" } });
-  document.getElementById("authStatus").textContent = error? error.message : "Check your email to confirm your account";
-  if(data?.session){ await check(); }
-});
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await supabaseClient.auth.signOut();
-  localStorage.setItem(GUEST_KEY, "0");
-  guestUses = 0;
-  currentAudio = null;
-  currentWavBlob = null;
-  if(currentAudioURL){ URL.revokeObjectURL(currentAudioURL); currentAudioURL = null; }
-  await check();
-});
-const PAYSTACK_KEY = "pk_test_238b10087d6e116590057be181d1f6af5849d32e";
-async function startPay(planCode, planName){
-  const {data} = await supabaseClient.auth.getUser();
-  if(!data?.user){ document.getElementById("paymentStatus").textContent = "Login first"; return; }
-  const pop = new PaystackPop();
-  pop.newTransaction({
-    key:PAYSTACK_KEY,
-    email:data.user.email,
-    planCode:planCode,
-    onSuccess: async tx => {
-      document.getElementById("paymentStatus").textContent = "Verifying...";
-      try{
-        const {data:ses} = await supabaseClient.auth.getSession();
-        if(!ses?.session){ throw new Error("Session expired. Please login again."); }
-        const res = await fetch(`${API_BASE}/verify-payment`, { method:"POST", headers:{ "Content-Type": "application/json", Authorization: `Bearer ${ses.session.access_token}` }, body:JSON.stringify({ reference: tx.reference, plan: planName }) });
-        let j = {}; try{ j = await res.json(); }catch(e){}
-        if(!res.ok){ throw new Error(j.error || "Payment verification failed"); }
-        document.getElementById("paymentStatus").textContent = "✅ Subscribed!";
-        isSubscribed = true;
-        pricingModal.style.display = "none";
-        await check();
-      }catch(e){ document.getElementById("paymentStatus").textContent = "❌ " + (e.message || "Payment verification failed"); }
-    }
-  });
-}
-document.querySelectorAll(".pay-btn").forEach(b => { b.addEventListener("click", () => startPay(b.dataset.code, b.dataset.plan)); });
-supabaseClient.auth.onAuthStateChange(() => { setTimeout(() => check(), 100); });
-check();
-updateFreeUI();
-</script>
-</body>
-</html>
+  document.getElementBy
