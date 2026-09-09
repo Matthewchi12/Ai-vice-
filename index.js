@@ -2,22 +2,22 @@ const FREE_GENERATIONS = 5;
 const GUEST_KEY = "voiceover_guest_uses";
 let guestUses = parseInt(localStorage.getItem(GUEST_KEY) || "0", 10) || 0;
 
-// Keep the generated audio for direct download
 let currentAudio = null;
 let currentAudioURL = null;
 let currentBlob = null;
 
 const API_URL = "https://ai-voice-backend-pl9h.onrender.com/tts";
 
+// Use the same client you created in HTML
+const sb = window.supabaseClient || window.supabase; 
+
 async function checkLogin() {
-  const { data } = await supabase.auth.getSession();
-  
+  const { data } = await sb.auth.getSession();
   if (data.session) {
     document.getElementById("app").style.display = "block";
     document.getElementById("authScreen").style.display = "none";
     return;
   }
-
   if (guestUses < FREE_GENERATIONS) {
     document.getElementById("app").style.display = "block";
     document.getElementById("authScreen").style.display = "none";
@@ -39,8 +39,7 @@ async function generateAudio() {
     return null;
   }
 
-  const { data } = await supabase.auth.getSession();
-
+  const { data } = await sb.auth.getSession();
   if (!data.session && guestUses >= FREE_GENERATIONS) {
     checkLogin();
     return null;
@@ -71,9 +70,14 @@ async function generateAudio() {
       throw new Error(err.error || "Generation failed");
     }
 
-    const blob = await res.blob(); // NOW WAV
+    const blob = await res.blob(); // WAV from backend
 
     if (currentAudioURL) URL.revokeObjectURL(currentAudioURL);
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+    }
+
     currentBlob = blob;
     currentAudioURL = URL.createObjectURL(blob);
     currentAudio = new Audio(currentAudioURL);
@@ -83,9 +87,9 @@ async function generateAudio() {
       localStorage.setItem(GUEST_KEY, guestUses.toString());
     }
 
-    statusEl.textContent = "✅ Generated! Click Download to save directly.";
+    statusEl.textContent = "✅ Generated! Click Play or Download.";
     checkLogin();
-    return blob;
+    return true;
 
   } catch (e) {
     console.error(e);
@@ -94,10 +98,28 @@ async function generateAudio() {
   }
 }
 
-// FAST - reuse same URL, no new createObjectURL
+// --- PLAY CONTROLS FIXED ---
+async function playAudio() {
+  if (!currentAudio) {
+    const ok = await generateAudio();
+    if (!ok) return;
+  }
+  try {
+    currentAudio.currentTime = 0;
+    await currentAudio.play();
+    document.getElementById("status").textContent = "▶️ Playing...";
+  } catch (e) {
+    document.getElementById("status").textContent = "❌ Can't play - click again";
+  }
+}
+function pauseAudio() { if (currentAudio) currentAudio.pause(); }
+function resumeAudio() { if (currentAudio) currentAudio.play(); }
+function stopAudio() { if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; } }
+
+// --- FAST DOWNLOAD - REUSE URL ---
 function downloadDirect(filename) {
   if (!currentBlob || !currentAudioURL) {
-    alert("Generate first");
+    alert("Generate first, then download");
     return;
   }
   const a = document.createElement("a");
@@ -108,11 +130,19 @@ function downloadDirect(filename) {
   a.remove();
 }
 
-// BOTH BUTTONS REMAIN - BOTH DOWNLOAD WAV
 function downloadMP3Direct() {
-  downloadDirect("voice.wav");
+  downloadDirect("voice.wav"); // MP3 button kept, downloads WAV
 }
-
 function downloadWAVDirect() {
   downloadDirect("voice.wav");
 }
+
+// Wire buttons
+document.getElementById("play")?.addEventListener("click", playAudio);
+document.getElementById("pause")?.addEventListener("click", pauseAudio);
+document.getElementById("resume")?.addEventListener("click", resumeAudio);
+document.getElementById("stop")?.addEventListener("click", stopAudio);
+document.getElementById("download")?.addEventListener("click", downloadWAVDirect);
+document.getElementById("downloadMp3")?.addEventListener("click", downloadMP3Direct);
+
+checkLogin();
