@@ -28,7 +28,6 @@ textarea{width:100%;min-height:130px;padding:14px;background:rgba(0,0,0,0.3);bor
 .buttons button.primary{background:#fff;color:#000}
 .download-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .download-buttons button{width:100%;padding:12px;border:0;border-radius:10px;background:rgba(255,255,255,0.06);color:#fff;cursor:pointer;font-weight:600}
-.download-buttons button:hover,.buttons button:hover{opacity:.85}
 #status{margin-top:12px;padding:10px;background:rgba(0,0,0,0.3);border-radius:8px;font-size:12px;text-align:center;color:#888}
 #pricingModal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:20px}
 .pricing-box{width:100%;max-width:900px;background:#15151f;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px;max-height:90vh;overflow-y:auto}
@@ -45,55 +44,18 @@ textarea{width:100%;min-height:130px;padding:14px;background:rgba(0,0,0,0.3);bor
   <div class="auth-card">
     <div style="font-size:40px">🔒</div>
     <h2 style="margin:12px 0 6px">Free Limit Reached</h2>
-    <p style="color:#888;font-size:12px;margin-bottom:16px" id="authReason">You've used your 5 free generations as guest.<br>Login to continue, then subscribe to generate more.</p>
-    <input id="email" class="auth-input" type="email" placeholder="Email" autocomplete="email">
-    <input id="password" class="auth-input" type="password" placeholder="Password (min 6 chars)" autocomplete="current-password">
+    <p style="color:#888;font-size:12px;margin-bottom:16px" id="authReason">You've used your 5 free generations as guest.<br>Login to continue.</p>
+    <input id="email" class="auth-input" type="email" placeholder="Email">
+    <input id="password" class="auth-input" type="password" placeholder="Password (min 6 chars)">
     <button id="loginButton" class="auth-btn login">Login</button>
     <button id="signupButton" class="auth-btn signup">Create Account</button>
     <p id="authStatus" style="margin-top:10px;font-size:12px;color:#a3ff12"></p>
   </div>
 </div>
-<div id="pricingModal">
-  <div class="pricing-box">
-    <h2 style="text-align:center">You've Used Your 5 Free Generations</h2>
-    <p style="text-align:center;color:#888;font-size:13px;margin-top:6px">Subscribe to continue generating unlimited voice-overs</p>
-    <div class="pricing-grid">
-      <div class="price-card">
-        <h3>Basic</h3>
-        <div class="amount">₦2,000 <span style="font-size:14px;color:#888">/week</span></div>
-        <div style="color:#888;font-size:12px">50 generations/week • All voices</div>
-        <button class="pay-btn" data-plan="basic" data-code="PLN_77evy40w37571js">Pay with Paystack</button>
-      </div>
-      <div class="price-card popular">
-        <div style="background:#7c3aed;color:#fff;font-size:10px;padding:3px 8px;border-radius:10px;display:inline-block">POPULAR</div>
-        <h3>Standard</h3>
-        <div class="amount">₦3,000 <span style="font-size:14px;color:#888">/week</span></div>
-        <div style="color:#888;font-size:12px">150 generations/week • Priority</div>
-        <button class="pay-btn" data-plan="standard" data-code="PLN_2klvnxb9r1exmhi">Pay with Paystack</button>
-      </div>
-      <div class="price-card">
-        <h3>Pro</h3>
-        <div class="amount">₦5,000 <span style="font-size:14px;color:#888">/week</span></div>
-        <div style="color:#888;font-size:12px">Unlimited • Commercial license</div>
-        <button class="pay-btn" data-plan="pro" data-code="PLN_g3m0doyhzmgp4y7">Pay with Paystack</button>
-      </div>
-    </div>
-    <p id="paymentStatus" style="text-align:center;margin-top:16px;font-weight:700;font-size:13px"></p>
-    <button onclick="document.getElementById('pricingModal').style.display='none'" style="display:block;margin:16px auto 0;background:none;border:0;color:#666;cursor:pointer;font-size:12px">Close (you can't generate until you pay)</button>
-  </div>
-</div>
+<div id="pricingModal"><div class="pricing-box"><h2 style="text-align:center">You've Used Your 5 Free</h2><p style="text-align:center;color:#888;font-size:13px;margin-top:6px">Subscribe to continue</p><div class="pricing-grid"><div class="price-card"><h3>Basic</h3><div class="amount">₦2,000 <span style="font-size:14px;color:#888">/week</span></div><button class="pay-btn" data-plan="basic" data-code="PLN_77evy40w37571js">Pay with Paystack</button></div><div class="price-card popular"><h3>Standard</h3><div class="amount">₦3,000 <span style="font-size:14px;color:#888">/week</span></div><button class="pay-btn" data-plan="standard" data-code="PLN_2klvnxb9r1exmhi">Pay with Paystack</button></div><div class="price-card"><h3>Pro</h3><div class="amount">₦5,000 <span style="font-size:14px;color:#888">/week</span></div><button class="pay-btn" data-plan="pro" data-code="PLN_g3m0doyhzmgp4y7">Pay with Paystack</button></div></div><p id="paymentStatus" style="text-align:center;margin-top:16px;font-weight:700;font-size:13px"></p><button onclick="document.getElementById('pricingModal').style.display='none'" style="display:block;margin:16px auto 0;background:none;border:0;color:#666;cursor:pointer;font-size:12px">Close</button></div></div>
 <div id="app">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div style="font-weight:700">🎙️ Voice Over Studio</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div class="pill" id="freePill"><span id="freeText">5 free left (Guest)</span></div>
-      <button id="logoutBtn" style="display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px">Logout</button>
-    </div>
-  </div>
-  <div class="hero">
-    <h1>5 FREE Uses<br>No Login Needed</h1>
-    <p style="color:#888;font-size:13px;margin-top:6px">Generate 5 voice-overs as guest • Login only after free • Pay only after free exhausted</p>
-  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700">🎙️ Voice Over Studio</div><div style="display:flex;gap:8px;align-items:center"><div class="pill"><span id="freeText">5 free left (Guest)</span></div><button id="logoutBtn" style="display:none;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px">Logout</button></div></div>
+  <div class="hero"><h1>5 FREE Uses<br>No Login Needed</h1></div>
   <div class="card">
     <label style="font-size:11px;color:#888">YOUR SCRIPT</label>
     <textarea id="text" placeholder="Type your script here..."></textarea>
@@ -107,25 +69,10 @@ textarea{width:100%;min-height:130px;padding:14px;background:rgba(0,0,0,0.3);bor
       <div class="voice-card" data-value="usMale">🇺🇸<br>US Male</div>
       <div class="voice-card" data-value="usFemale">🇺🇸<br>US Female</div>
     </div>
-    <select id="voice" style="display:none">
-      <option value="nigeriaMale">NG Male</option>
-      <option value="nigeriaFemale">NG Female</option>
-      <option value="ukMale">UK Male</option>
-      <option value="ukFemale">UK Female</option>
-      <option value="usMale">US Male</option>
-      <option value="usFemale">US Female</option>
-    </select>
-    <div class="buttons">
-      <button id="play" class="primary">▶ Play</button>
-      <button id="pause">⏸ Pause</button>
-      <button id="resume">▶ Resume</button>
-      <button id="stop">⏹ Stop</button>
-    </div>
-    <div class="download-buttons">
-      <button id="download">⬇️ Download WAV</button>
-      <button id="downloadMp3">⬇️ Download MP3</button>
-    </div>
-    <div id="status">Ready • Guest mode • 5 free, no login • After 5 free: login → then pay to continue</div>
+    <select id="voice" style="display:none"><option value="nigeriaMale">NG Male</option><option value="nigeriaFemale">NG Female</option><option value="ukMale">UK Male</option><option value="ukFemale">UK Female</option><option value="usMale">US Male</option><option value="usFemale">US Female</option></select>
+    <div class="buttons"><button id="play" class="primary">▶ Play</button><button id="pause">⏸ Pause</button><button id="resume">▶ Resume</button><button id="stop">⏹ Stop</button></div>
+    <div class="download-buttons"><button id="download">⬇️ Download WAV</button><button id="downloadMp3">⬇️ Download MP3</button></div>
+    <div id="status">Ready • Guest mode • 5 free</div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -138,160 +85,140 @@ const API_BASE = "https://ai-voice-backend-pl9h.onrender.com";
 const API_URL = `${API_BASE}/tts`;
 const FREE = 5;
 const GUEST_KEY = "voiceover_guest_uses";
-let guestUses = parseInt(localStorage.getItem(GUEST_KEY) || "0", 10);
-let freeUses = 0;
-let isSubscribed = false;
-let isLoggedIn = false;
-let currentAudio = null;
-let currentAudioURL = null;
-let currentWavBlob = null;
+let guestUses = parseInt(localStorage.getItem(GUEST_KEY) || "0", 10) || 0;
+let freeUses = 0, isSubscribed = false, isLoggedIn = false;
+let currentAudio = null, currentAudioURL = null, currentWavBlob = null;
 const authScreen = document.getElementById("authScreen");
 const appDiv = document.getElementById("app");
 const pricingModal = document.getElementById("pricingModal");
 const freeText = document.getElementById("freeText");
-const status = document.getElementById("status");
+const statusEl = document.getElementById("status");
 
 function updateFreeUI(){
   const remaining = Math.max(0, FREE - (isLoggedIn? freeUses : guestUses));
-  if(isLoggedIn){ freeText.textContent = isSubscribed? "Pro Active ✓ Unlimited" : `${remaining} free left`; }
-  else{ freeText.textContent = `${remaining} free left (Guest)`; }
+  freeText.textContent = isLoggedIn ? (isSubscribed? "Pro Active ✓ Unlimited" : `${remaining} free left`) : `${remaining} free left (Guest)`;
   document.getElementById("count").textContent = document.getElementById("text").value.length;
 }
-
 async function check(){
   try{
     const {data} = await supabaseClient.auth.getSession();
-    isLoggedIn =!!data?.session;
-    document.getElementById("logoutBtn").style.display = isLoggedIn? "block" : "none";
+    isLoggedIn = !!data?.session;
+    document.getElementById("logoutBtn").style.display = isLoggedIn? "block":"none";
     if(isLoggedIn){
       try{
-        const res = await fetch(`${API_BASE}/subscription`, { headers:{ Authorization: `Bearer ${data.session.access_token}` } });
-        const j = await res.json();
-        freeUses = j.free_uses || 0;
-        isSubscribed =!!j.active;
-      }catch(e){ freeUses = 0; isSubscribed = false; }
-      authScreen.style.display = "none";
-      appDiv.style.display = "block";
-      if(!isSubscribed && freeUses >= FREE){ pricingModal.style.display = "flex"; }else{ pricingModal.style.display = "none"; }
-      updateFreeUI();
-      return;
+        const res = await fetch(`${API_BASE}/subscription`,{headers:{Authorization:`Bearer ${data.session.access_token}`}});
+        const j = await res.json(); freeUses=j.free_uses||0; isSubscribed=!!j.active;
+      }catch(e){ freeUses=0; isSubscribed=false; }
+      authScreen.style.display="none"; appDiv.style.display="block";
+      pricingModal.style.display = (!isSubscribed && freeUses>=FREE)? "flex":"none";
+      updateFreeUI(); return;
     }
-    if(guestUses < FREE){ authScreen.style.display = "none"; pricingModal.style.display = "none"; appDiv.style.display = "block"; }
-    else{ authScreen.style.display = "flex"; appDiv.style.display = "none"; }
+    if(guestUses < FREE){ authScreen.style.display="none"; pricingModal.style.display="none"; appDiv.style.display="block"; }
+    else{ authScreen.style.display="flex"; appDiv.style.display="none"; }
     updateFreeUI();
-  }catch(e){ console.error("Check error:", e); }
+  }catch(e){ console.error(e); }
 }
-
-document.getElementById("voiceGrid").addEventListener("click", e => {
-  const c = e.target.closest(".voice-card");
-  if(!c) return;
-  document.querySelectorAll(".voice-card").forEach(x => x.classList.remove("active"));
-  c.classList.add("active");
-  document.getElementById("voice").value = c.dataset.value;
+document.getElementById("voiceGrid").addEventListener("click", e=>{
+  const c=e.target.closest(".voice-card"); if(!c) return;
+  document.querySelectorAll(".voice-card").forEach(x=>x.classList.remove("active"));
+  c.classList.add("active"); document.getElementById("voice").value=c.dataset.value;
 });
 document.getElementById("text").addEventListener("input", updateFreeUI);
-const voiceMap = { nigeriaMale: "Charon", nigeriaFemale: "Aoede", ukMale: "Charon", ukFemale: "Aoede", usMale: "Puck", usFemale: "Kore" };
+const voiceMap={nigeriaMale:"Charon",nigeriaFemale:"Aoede",ukMale:"Charon",ukFemale:"Aoede",usMale:"Puck",usFemale:"Kore"};
 
-async function generateRequest(endpoint){
-  const txt = document.getElementById("text").value.trim();
-  if(!txt){ status.textContent = "Enter text"; return null; }
-  const {data} = await supabaseClient.auth.getSession();
-  const logged =!!data?.session;
-  if(!logged && guestUses >= FREE){ await check(); return null; }
-  if(logged &&!isSubscribed && freeUses >= FREE){ pricingModal.style.display = "flex"; return null; }
-  status.textContent = "⏳ Generating...";
-  const sel = document.getElementById("voice").value;
-  const voice = voiceMap[sel];
-  const language = sel.includes("nigeria")? "Nigerian" : sel.includes("uk")? "British" : "American";
-  const script = `Speak naturally in ${language} English. ${txt}`;
+async function generateRequest(){
+  const txt=document.getElementById("text").value.trim();
+  if(!txt){ statusEl.textContent="Enter text"; return null; }
+  const {data}=await supabaseClient.auth.getSession(); const logged=!!data?.session;
+  if(!logged && guestUses>=FREE){ await check(); return null; }
+  if(logged && !isSubscribed && freeUses>=FREE){ pricingModal.style.display="flex"; return null; }
+  statusEl.textContent="⏳ Generating...";
+  const sel=document.getElementById("voice").value; const voice=voiceMap[sel];
+  const language=sel.includes("nigeria")?"Nigerian":sel.includes("uk")?"British":"American";
+  const script=`Speak naturally in ${language} English. ${txt}`;
   try{
-    const headers = { "Content-Type": "application/json" };
-    if(logged){ headers["Authorization"] = `Bearer ${data.session.access_token}`; }
-    const res = await fetch(endpoint, { method:"POST", headers, body:JSON.stringify({ text:script, voice:voice }) });
-    if(res.status === 402){ if(logged){ pricingModal.style.display = "flex"; }else{ await check(); } return null; }
-    if(!res.ok){
-      let errorMessage = "Generation failed";
-      try{ const j = await res.json(); errorMessage = j.error || errorMessage; }catch(e){ try{ errorMessage = await res.text(); }catch(x){} }
-      throw new Error(errorMessage);
-    }
-    const blob = await res.blob();
-    if(!logged){ guestUses++; localStorage.setItem(GUEST_KEY, guestUses.toString()); }
+    const headers={"Content-Type":"application/json"};
+    if(logged) headers["Authorization"]=`Bearer ${data.session.access_token}`;
+    const res=await fetch(API_URL,{method:"POST",headers,body:JSON.stringify({text:script,voice})});
+    if(res.status===402){ if(logged) pricingModal.style.display="flex"; else await check(); return null; }
+    if(!res.ok){ const j=await res.json().catch(()=>({})); throw new Error(j.error||"Generation failed"); }
+    const blob=await res.blob();
+    if(!logged){ guestUses++; localStorage.setItem(GUEST_KEY,guestUses.toString()); }
     else{
-      try{
-        const r = await fetch(`${API_BASE}/subscription`, { headers:{ Authorization: `Bearer ${data.session.access_token}` } });
-        const j = await r.json();
-        freeUses = j.free_uses || 0;
-        isSubscribed =!!j.active;
-      }catch(e){}
+      try{ const r=await fetch(`${API_BASE}/subscription`,{headers:{Authorization:`Bearer ${data.session.access_token}`}}); const j=await r.json(); freeUses=j.free_uses||0; isSubscribed=!!j.active; }catch(e){}
     }
-    updateFreeUI();
-    return { blob:blob, logged:logged };
-  }catch(e){
-    console.error("Generation error:", e);
-    status.textContent = "❌ " + (e.message || "Generation failed");
-    return null;
-  }
+    updateFreeUI(); return {blob,logged};
+  }catch(e){ console.error(e); statusEl.textContent="❌ "+e.message; return null; }
 }
-
 async function genAudio(){
-  const result = await generateRequest(API_URL);
-  if(!result) return null;
-  if(currentAudioURL){ URL.revokeObjectURL(currentAudioURL); }
-  currentWavBlob = result.blob;
-  currentAudioURL = URL.createObjectURL(currentWavBlob);
-  currentAudio = new Audio(currentAudioURL);
-  status.textContent = "✅ Generated! Click Download to save directly.";
-  if(!result.logged && guestUses >= FREE){ setTimeout(() => check(), 1500); }
-  if(result.logged &&!isSubscribed && freeUses >= FREE){ setTimeout(() => { pricingModal.style.display = "flex"; }, 1500); }
+  const result=await generateRequest(); if(!result) return false;
+  if(currentAudioURL) URL.revokeObjectURL(currentAudioURL);
+  if(currentAudio){ currentAudio.pause(); }
+  currentWavBlob=result.blob; currentAudioURL=URL.createObjectURL(currentWavBlob); currentAudio=new Audio(currentAudioURL);
+  statusEl.textContent="✅ Generated! Play or Download.";
   return true;
 }
 
-document.getElementById("play").addEventListener("click", async () => {
-  if(!currentAudio){ const generated = await genAudio(); if(!generated) return; }
-  currentAudio.currentTime = 0;
-  try{ await currentAudio.play(); }catch(e){ status.textContent = "❌ Unable to play audio"; }
+// BUTTONS - FIXED AND RESPONSIVE
+document.getElementById("play").addEventListener("click", async ()=>{
+  if(!currentAudio){ const ok=await genAudio(); if(!ok) return; }
+  currentAudio.currentTime=0;
+  try{ await currentAudio.play(); statusEl.textContent="▶️ Playing WAV..."; }catch(e){ statusEl.textContent="❌ Unable to play"; }
 });
-document.getElementById("pause").addEventListener("click", () => { if(currentAudio){ currentAudio.pause(); } });
-document.getElementById("resume").addEventListener("click", async () => { if(currentAudio){ try{ await currentAudio.play(); }catch(e){ status.textContent = "❌ Unable to resume audio"; } } });
-document.getElementById("stop").addEventListener("click", () => { if(currentAudio){ currentAudio.pause(); currentAudio.currentTime = 0; } });
+document.getElementById("pause").addEventListener("click", ()=>{ if(currentAudio) currentAudio.pause(); });
+document.getElementById("resume").addEventListener("click", async ()=>{ if(currentAudio) try{ await currentAudio.play(); }catch(e){} });
+document.getElementById("stop").addEventListener("click", ()=>{ if(currentAudio){ currentAudio.pause(); currentAudio.currentTime=0; } });
 
-// --- FIXED FAST DOWNLOAD - BOTH BUTTONS DOWNLOAD WAV ---
-function downloadFast(filename){
+async function downloadFast(){
   if(!currentWavBlob || !currentAudioURL){
-    genAudio();
-    return;
+    const ok=await genAudio(); if(!ok) return;
   }
-  const a = document.createElement("a");
-  a.href = currentAudioURL; // reuse, don't create new URL
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  status.textContent = "✅ Downloaded!";
+  const a=document.createElement("a"); a.href=currentAudioURL; a.download="voice.wav";
+  document.body.appendChild(a); a.click(); a.remove();
+  statusEl.textContent="✅ Downloaded voice.wav";
 }
+document.getElementById("download").addEventListener("click", downloadFast);
+document.getElementById("downloadMp3").addEventListener("click", downloadFast); // MP3 BUTTON RETAINED BUT DOWNLOADS WAV
 
-document.getElementById("download").addEventListener("click", () => {
-  downloadFast("voice.wav");
+document.getElementById("loginButton").addEventListener("click", async ()=>{
+  const email=document.getElementById("email").value.trim(); const pass=document.getElementById("password").value;
+  if(!email){ document.getElementById("authStatus").textContent="Enter email"; return; }
+  if(!pass){ document.getElementById("authStatus").textContent="Enter password"; return; }
+  document.getElementById("authStatus").textContent="Logging in...";
+  const {error}=await supabaseClient.auth.signInWithPassword({email,password:pass});
+  document.getElementById("authStatus").textContent=error?error.message:"Logged in!"; if(!error) await check();
 });
-
-document.getElementById("downloadMp3").addEventListener("click", () => {
-  // MP3 BUTTON RETAINED BUT DOWNLOADS WAV AS YOU ASKED
-  downloadFast("voice.wav");
+document.getElementById("signupButton").addEventListener("click", async ()=>{
+  const email=document.getElementById("email").value.trim(); const pass=document.getElementById("password").value;
+  if(!email){ document.getElementById("authStatus").textContent="Enter email"; return; }
+  if(pass.length<6){ document.getElementById("authStatus").textContent="Password min 6 chars"; return; }
+  document.getElementById("authStatus").textContent="Creating account...";
+  const {data,error}=await supabaseClient.auth.signUp({email,password:pass,options:{emailRedirectTo:"https://matthewchi12.github.io/Ai-vice-/"}});
+  document.getElementById("authStatus").textContent=error?error.message:"Check your email to confirm"; if(data?.session) await check();
 });
-
-document.getElementById("loginButton").addEventListener("click", async () => {
-  const email = document.getElementById("email").value.trim();
-  const pass = document.getElementById("password").value;
-  if(!email){ document.getElementById("authStatus").textContent = "Enter your email"; return; }
-  if(!pass){ document.getElementById("authStatus").textContent = "Enter your password"; return; }
-  document.getElementById("authStatus").textContent = "Logging in...";
-  const {error} = await supabaseClient.auth.signInWithPassword({ email:email, password:pass });
-  document.getElementById("authStatus").textContent = error? error.message : "Logged in!";
-  if(!error){ await check(); }
+document.getElementById("logoutBtn").addEventListener("click", async ()=>{
+  await supabaseClient.auth.signOut(); localStorage.setItem(GUEST_KEY,"0"); guestUses=0; currentAudio=null; currentWavBlob=null;
+  if(currentAudioURL){ URL.revokeObjectURL(currentAudioURL); currentAudioURL=null; } await check();
 });
-document.getElementById("signupButton").addEventListener("click", async () => {
-  const email = document.getElementById("email").value.trim();
-  const pass = document.getElementById("password").value;
-  if(!email){ document.getElementById("authStatus").textContent = "Enter your email"; return; }
-  if(pass.length < 6){ document.getElementById("authStatus").textContent = "Password must be at least 6 characters"; return; }
-  document.getElementBy
+const PAYSTACK_KEY="pk_test_238b10087d6e116590057be181d1f6af5849d32e";
+async function startPay(planCode,planName){
+  const {data}=await supabaseClient.auth.getUser(); if(!data?.user){ document.getElementById("paymentStatus").textContent="Login first"; return; }
+  const pop=new PaystackPop();
+  pop.newTransaction({key:PAYSTACK_KEY,email:data.user.email,planCode,
+    onSuccess: async tx=>{
+      document.getElementById("paymentStatus").textContent="Verifying...";
+      try{
+        const {data:ses}=await supabaseClient.auth.getSession();
+        const res=await fetch(`${API_BASE}/verify-payment`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${ses.session.access_token}`},body:JSON.stringify({reference:tx.reference,plan:planName})});
+        const j=await res.json(); if(!res.ok) throw new Error(j.error||"Verify failed");
+        document.getElementById("paymentStatus").textContent="✅ Subscribed!"; isSubscribed=true; pricingModal.style.display="none"; await check();
+      }catch(e){ document.getElementById("paymentStatus").textContent="❌ "+e.message; }
+    }
+  });
+}
+document.querySelectorAll(".pay-btn").forEach(b=>b.addEventListener("click",()=>startPay(b.dataset.code,b.dataset.plan)));
+supabaseClient.auth.onAuthStateChange(()=>setTimeout(()=>check(),100));
+check(); updateFreeUI();
+</script>
+</body>
+</html>
