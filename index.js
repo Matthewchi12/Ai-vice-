@@ -13,13 +13,11 @@ async function checkLogin() {
   const { data } = await supabase.auth.getSession();
   
   if (data.session) {
-    // Logged in user - check backend count
     document.getElementById("app").style.display = "block";
     document.getElementById("authScreen").style.display = "none";
     return;
   }
 
-  // Guest logic
   if (guestUses < FREE_GENERATIONS) {
     document.getElementById("app").style.display = "block";
     document.getElementById("authScreen").style.display = "none";
@@ -43,7 +41,6 @@ async function generateAudio() {
 
   const { data } = await supabase.auth.getSession();
 
-  // Guest limit check
   if (!data.session && guestUses >= FREE_GENERATIONS) {
     checkLogin();
     return null;
@@ -63,7 +60,6 @@ async function generateAudio() {
       body: JSON.stringify({ text: script, voice: "Kore" })
     });
 
-    // Free limit reached from backend
     if (res.status === 402) {
       statusEl.textContent = "Free limit reached. Please login.";
       checkLogin();
@@ -75,22 +71,20 @@ async function generateAudio() {
       throw new Error(err.error || "Generation failed");
     }
 
-    const blob = await res.blob(); // MP3 binary
+    const blob = await res.blob(); // NOW WAV
 
-    // Save for direct download - no re-generation needed
     if (currentAudioURL) URL.revokeObjectURL(currentAudioURL);
     currentBlob = blob;
     currentAudioURL = URL.createObjectURL(blob);
     currentAudio = new Audio(currentAudioURL);
 
-    // Count ONLY after success
     if (!data.session) {
       guestUses++;
       localStorage.setItem(GUEST_KEY, guestUses.toString());
     }
 
     statusEl.textContent = "✅ Generated! Click Download to save directly.";
-    checkLogin(); // update UI
+    checkLogin();
     return blob;
 
   } catch (e) {
@@ -100,18 +94,25 @@ async function generateAudio() {
   }
 }
 
-// Download directly - no second API call
-function downloadMP3Direct() {
-  if (!currentBlob) {
+// FAST - reuse same URL, no new createObjectURL
+function downloadDirect(filename) {
+  if (!currentBlob || !currentAudioURL) {
     alert("Generate first");
     return;
   }
-  const url = URL.createObjectURL(currentBlob);
   const a = document.createElement("a");
-  a.href = url;
-  a.download = "voice.mp3"; // backend returns MP3 directly now
+  a.href = currentAudioURL;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// BOTH BUTTONS REMAIN - BOTH DOWNLOAD WAV
+function downloadMP3Direct() {
+  downloadDirect("voice.wav");
+}
+
+function downloadWAVDirect() {
+  downloadDirect("voice.wav");
 }
